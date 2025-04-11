@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>QR Code Generator</title>
+  </head>
+  <body style="text-align: center; padding-top: 100px; font-family: sans-serif">
+    <button onclick="generateQR()">Generate</button>
+    <div
+      id="qrContainer"
+      style="margin-top: 20px"
+    ></div>
+
+    <script>
+      async function generateQR() {
+        const res = await fetch('http://localhost:5000/generate', {
+          method: 'POST',
+        });
+        const data = await res.json();
+        document.getElementById(
+          'qrContainer'
+        ).innerHTML = `<img src="${data.qrImage}" alt="QR Code" /><br/><a href="${data.qrImage}" download="qr-code.png">Download QR</a>`;
+      }
+    </script>
+  </body>
+</html>
