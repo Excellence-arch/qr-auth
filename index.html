@@ -10,9 +10,14 @@
 
     <button
       onclick="generateQR()"
-      class="bg-white text-blue-600 hover:bg-blue-100 font-semibold py-3 px-6 rounded-full shadow-lg transition-all duration-300"
+      id="generateBtn"
+      class="bg-white text-blue-600 hover:bg-blue-100 font-semibold py-3 px-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center"
     >
-      Generate
+      <span id="btnText">Generate</span>
+      <svg id="spinner" class="hidden w-5 h-5 ml-2 text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
     </button>
 
     <div
@@ -22,20 +27,43 @@
 
     <script>
       async function generateQR() {
-        const res = await fetch("https://qr-auth-be.onrender.com/generate", {
-          method: "POST",
-        });
-        const data = await res.json();
-        document.getElementById("qrContainer").innerHTML = `
-          <img src="${data.qrImage}" alt="QR Code" class="mx-auto mb-4" />
-          <a 
-            href="${data.qrImage}" 
-            download="qr-code.png"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Download QR
-          </a>
-        `;
+        const btn = document.getElementById('generateBtn');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const qrContainer = document.getElementById('qrContainer');
+        
+        // Show spinner and disable button
+        btn.disabled = true;
+        btnText.textContent = 'Generating...';
+        spinner.classList.remove('hidden');
+        qrContainer.innerHTML = '';
+        
+        try {
+          const res = await fetch("https://qr-auth-be.onrender.com/generate", {
+            method: "POST",
+          });
+          const data = await res.json();
+          
+          qrContainer.innerHTML = `
+            <img src="${data.qrImage}" alt="QR Code" class="mx-auto mb-4" />
+            <a 
+              href="${data.qrImage}" 
+              download="qr-code.png"
+              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            >
+              Download QR
+            </a>
+          `;
+        } catch (error) {
+          qrContainer.innerHTML = `
+            <p class="text-red-500">Error generating QR code. Please try again.</p>
+          `;
+        } finally {
+          // Reset button state
+          btn.disabled = false;
+          btnText.textContent = 'Generate';
+          spinner.classList.add('hidden');
+        }
       }
     </script>
   </body>
