@@ -13,6 +13,21 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
+      .count-up {
+        transition: all 1s ease-out;
+      }
+
+      .stats-card {
+        transition: all 0.3s ease;
+        transform: translateY(10px);
+        opacity: 0;
+      }
+
+      .stats-card.animate {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
       .page-transition {
         transition: all 0.3s ease;
       }
@@ -75,6 +90,70 @@
         }
         100% {
           transform: rotate(360deg);
+        }
+      }
+
+      /* Water sliding animation */
+      @keyframes waterSlideIn {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .water-slide {
+        animation: waterSlideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+
+      /* Delay animations for staggered effect */
+      .water-slide:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .water-slide:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .water-slide:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+
+      /* Wave loading animation */
+      .wave-loading {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+      .wave-loading div {
+        position: absolute;
+        width: 16px;
+        background: #3b82f6;
+        animation: wave-loading 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+      }
+      .wave-loading div:nth-child(1) {
+        left: 8px;
+        animation-delay: -0.24s;
+      }
+      .wave-loading div:nth-child(2) {
+        left: 32px;
+        animation-delay: -0.12s;
+      }
+      .wave-loading div:nth-child(3) {
+        left: 56px;
+        animation-delay: 0;
+      }
+      @keyframes wave-loading {
+        0% {
+          top: 8px;
+          height: 64px;
+        }
+        50%,
+        100% {
+          top: 24px;
+          height: 32px;
         }
       }
     </style>
@@ -218,7 +297,9 @@
             class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
             id="stats-cards"
           >
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div
+              class="bg-white rounded-xl shadow-sm p-6 card-hover stats-card"
+            >
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-gray-500">Total Events</p>
@@ -234,7 +315,9 @@
                 </div>
               </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div
+              class="bg-white rounded-xl shadow-sm p-6 card-hover stats-card"
+            >
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-gray-500">Total Attendees</p>
@@ -250,7 +333,9 @@
                 </div>
               </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div
+              class="bg-white rounded-xl shadow-sm p-6 card-hover stats-card"
+            >
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-gray-500">Upcoming Events</p>
@@ -309,9 +394,11 @@
     <!-- Add Event Modal -->
     <div
       id="add-event-modal"
-      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden"
+      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden overflow-y-auto py-8"
     >
-      <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+      <div
+        class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+      >
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-xl font-bold text-gray-800">Add New Event</h3>
           <button
@@ -377,6 +464,33 @@
               />
             </div>
           </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="event-start-time"
+                class="block mb-2 font-medium text-gray-700"
+                >Start Time</label
+              >
+              <input
+                type="time"
+                id="event-start-time"
+                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+            <div>
+              <label
+                for="event-end-time"
+                class="block mb-2 font-medium text-gray-700"
+                >End Time</label
+              >
+              <input
+                type="time"
+                id="event-end-time"
+                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+          </div>
           <div>
             <label
               for="event-location"
@@ -401,6 +515,21 @@
               class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
+
+          <div class="flex items-center mt-4">
+            <input
+              type="checkbox"
+              id="event-is-public"
+              checked
+              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label
+              for="event-is-public"
+              class="ml-2 text-sm font-medium text-gray-700"
+              >Public Event</label
+            >
+          </div>
+
           <div class="flex justify-end space-x-3 pt-4">
             <button
               type="button"
@@ -565,93 +694,6 @@
           return await response.json();
         },
 
-        getEvents: () => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve([
-                {
-                  id: 1,
-                  title: 'Tech Conference 2023',
-                  description:
-                    'Annual technology conference featuring the latest innovations in AI, blockchain, and cloud computing.',
-                  startDate: '2023-10-15',
-                  endDate: '2023-10-17',
-                  location: 'Moscone Center, San Francisco',
-                  organizer: 'Tech Events Inc.',
-                  capacity: 500,
-                  attendees: 142,
-                  status: 'active',
-                },
-                {
-                  id: 2,
-                  title: 'Marketing Summit',
-                  description:
-                    'Learn from industry leaders about the latest trends in digital marketing and brand strategy.',
-                  startDate: '2023-11-05',
-                  endDate: '2023-11-06',
-                  location: 'Javits Center, New York',
-                  organizer: 'Marketing Pros LLC',
-                  capacity: 300,
-                  attendees: 89,
-                  status: 'completed',
-                },
-                {
-                  id: 3,
-                  title: 'Developer Workshop',
-                  description:
-                    'Hands-on workshop for developers to learn modern web development techniques.',
-                  startDate: '2023-12-10',
-                  endDate: '2023-12-10',
-                  location: 'Virtual Event',
-                  organizer: 'Code Masters',
-                  capacity: 100,
-                  attendees: 56,
-                  status: 'upcoming',
-                },
-              ]);
-            }, 600);
-          });
-        },
-
-        getAttendees: () => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve([
-                {
-                  id: 1,
-                  name: 'John Doe',
-                  email: 'john.doe@example.com',
-                  phone: '+1 555-123-4567',
-                  eventId: 1,
-                  eventName: 'Tech Conference 2023',
-                  status: 'checked-in',
-                  registrationDate: '2023-09-15',
-                },
-                {
-                  id: 2,
-                  name: 'Alice Smith',
-                  email: 'alice.smith@example.com',
-                  phone: '+1 555-987-6543',
-                  eventId: 2,
-                  eventName: 'Marketing Summit',
-                  status: 'registered',
-                  registrationDate: '2023-10-20',
-                },
-                {
-                  id: 3,
-                  name: 'Robert Johnson',
-                  email: 'robert.j@example.com',
-                  phone: '+1 555-456-7890',
-                  eventId: 3,
-                  eventName: 'Developer Workshop',
-                  status: 'cancelled',
-                  registrationDate: '2023-11-05',
-                },
-              ]);
-            }, 700);
-          });
-        },
-
         addEvent: (eventData) => {
           return new Promise((resolve) => {
             setTimeout(() => {
@@ -733,27 +775,33 @@
       }
 
       // Load all data from API
+      // Load all data from API
       async function loadAllData() {
         try {
+          // Show loading state
+          document.getElementById('recent-events-container').innerHTML = `
+      <div class="p-6 flex justify-center">
+        <div class="wave-loading">
+          <div></div><div></div><div></div>
+        </div>
+      </div>`;
+
+          document.getElementById('recent-attendees-container').innerHTML = `
+      <div class="p-6 flex justify-center">
+        <div class="wave-loading">
+          <div></div><div></div><div></div>
+        </div>
+      </div>`;
+
           // Load user data
           const user = await mockApi.getUser();
           appState.user = user;
           document.getElementById('username-display').textContent =
             user.username;
 
+          // Load analytics data
           const analytics = await mockApi.getDashboardAnalytics();
-          appState.analytics = analytics.data; // Assuming your API returns { success: true, data: {...} }
-
-          // Update UI with loaded data
-          updateDashboardStats();
-
-          // Load events
-          const events = await mockApi.getEvents();
-          appState.events = events;
-
-          // Load attendees
-          const attendees = await mockApi.getAttendees();
-          appState.attendees = attendees;
+          appState.analytics = analytics.data;
 
           // Update UI with loaded data
           updateDashboardStats();
@@ -768,134 +816,261 @@
 
       // Update dashboard statistics
       function updateDashboardStats() {
-        if (!appState.analytics) return;
+        // In the updateDashboardStats function, add this:
+        if (appState.analytics.upcomingEvents?.length > 0) {
+          const upcomingContainer = document.getElementById(
+            'upcoming-events-container'
+          );
+          if (upcomingContainer) {
+            upcomingContainer.innerHTML = appState.analytics.upcomingEvents
+              .map(
+                (event) => `
+        <div class="p-4 border-b border-gray-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-medium">${event.name}</h4>
+              <p class="text-sm text-gray-500">
+                ${formatDate(event.startDate)} • ${event.location}
+              </p>
+            </div>
+            <span class="${getStatusClass(event.status)}">
+              ${getStatusText(event.status)}
+            </span>
+          </div>
+        </div>
+      `
+              )
+              .join('');
+          }
+        }
 
-        document.getElementById('total-events').textContent =
-          appState.analytics.totalEvents || 0;
+        // Animate stats cards
+        const statsCards = document.querySelectorAll(
+          '#stats-cards .stats-card'
+        );
+        statsCards.forEach((card, index) => {
+          setTimeout(() => {
+            card.classList.add('animate');
+          }, index * 150);
+        });
 
-        document.getElementById('total-attendees').textContent =
-          appState.analytics.totalAttendees || 0;
-
-        document.getElementById('upcoming-events').textContent =
-          appState.analytics.upcomingEvents?.length || 0;
-
-        // If upcomingEvents is an array of objects, you might want to set it to:
-        // appState.upcomingEvents = appState.analytics.upcomingEvents;
+        // Count-up animation for numbers
+        animateValue(
+          'total-events',
+          0,
+          appState.analytics.totalEvents || 0,
+          1000
+        );
+        animateValue(
+          'total-attendees',
+          0,
+          appState.analytics.totalAttendees || 0,
+          1000
+        );
+        animateValue(
+          'upcoming-events',
+          0,
+          appState.analytics.upcomingEvents?.length || 0,
+          1000
+        );
       }
 
-      // Render recent events
+      // Helper function for count-up animation
+      function animateValue(id, start, end, duration) {
+        const element = document.getElementById(id);
+        if (!element) return;
+
+        let startTimestamp = null;
+        const step = (timestamp) => {
+          if (!startTimestamp) startTimestamp = timestamp;
+          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+          element.textContent = Math.floor(progress * (end - start) + start);
+          if (progress < 1) {
+            window.requestAnimationFrame(step);
+          }
+        };
+        window.requestAnimationFrame(step);
+      }
+
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
+
+      function formatTime(timeString) {
+        if (!timeString) return '';
+        // Assuming timeString is in HH:MM format
+        const [hours, minutes] = timeString.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+      }
+
+      function formatDateRange(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (start.toDateString() === end.toDateString()) {
+          return formatDate(startDate);
+        }
+
+        if (
+          start.getMonth() === end.getMonth() &&
+          start.getFullYear() === end.getFullYear()
+        ) {
+          return `${start.getDate()} - ${formatDate(endDate)}`;
+        }
+
+        if (start.getFullYear() === end.getFullYear()) {
+          return `${start.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          })} - ${formatDate(endDate)}`;
+        }
+
+        return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+      }
+
+      // Render recent events with real data
       function renderRecentEvents() {
         const container = document.getElementById('recent-events-container');
 
-        if (appState.events.length === 0) {
+        if (
+          !appState.analytics ||
+          !appState.analytics.recentEvents ||
+          appState.analytics.recentEvents.length === 0
+        ) {
           container.innerHTML =
-            '<div class="p-6 text-center text-gray-500">No events found</div>';
+            '<div class="p-6 text-center text-gray-500">No recent events found</div>';
           return;
         }
 
-        container.innerHTML = appState.events
+        container.innerHTML = appState.analytics.recentEvents
           .map(
-            (event) => `
-              <div class="p-6 hover:bg-gray-50 transition cursor-pointer">
-                  <div class="flex items-center justify-between">
-                      <div>
-                          <h4 class="font-medium text-gray-800">${
-                            event.title
-                          }</h4>
-                          <p class="text-sm text-gray-500 mt-1">
-                              ${formatDateRange(
-                                event.startDate,
-                                event.endDate
-                              )} • ${event.location}
-                          </p>
-                      </div>
-                      <div class="flex items-center">
-                          <span class="${getStatusClass(event.status)}">
-                              ${getStatusText(event.status)}
-                          </span>
-                          <span class="ml-4 text-gray-800 font-medium">${
-                            event.attendees
-                          } attendees</span>
-                          <button onclick="toggleEventDetails(this)" class="ml-4 text-gray-400 hover:text-gray-600">
-                              <i class="fas fa-chevron-down"></i>
-                          </button>
-                      </div>
-                  </div>
-                  <div class="event-details mt-4">
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-                          <div>
-                              <p class="text-sm text-gray-500">Description</p>
-                              <p class="text-gray-800 mt-1">${
-                                event.description
-                              }</p>
-                          </div>
-                          <div>
-                              <p class="text-sm text-gray-500">Venue</p>
-                              <p class="text-gray-800 mt-1">${
-                                event.location
-                              }</p>
-                          </div>
-                          <div>
-                              <p class="text-sm text-gray-500">Organizer</p>
-                              <p class="text-gray-800 mt-1">${
-                                event.organizer
-                              }</p>
-                          </div>
-                      </div>
-                      <div class="flex justify-end mt-4 space-x-2">
-                          <button class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-lg transition">
-                              <i class="fas fa-edit mr-1"></i> Edit
-                          </button>
-                          <button class="text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1.5 px-3 rounded-lg transition">
-                              <i class="fas fa-trash mr-1"></i> Delete
-                          </button>
-                      </div>
-                  </div>
+            (event, index) => `
+            <div class="p-6 hover:bg-gray-50 transition cursor-pointer water-slide" style="opacity: 0; animation-delay: ${
+              index * 0.1
+            }s">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-medium text-gray-800">${event.name}</h4>
+                  <p class="text-sm text-gray-500 mt-1">
+                    ${formatDateRange(event.startDate, event.endDate)} • ${
+              event.location
+            }
+                    ${event.startTime ? `• ${formatTime(event.startTime)}` : ''}
+                    ${event.endTime ? `- ${formatTime(event.endTime)}` : ''}
+                  </p>
+                </div>
+                <div class="flex items-center">
+                  <span class="${getStatusClass(event.status)}">
+                    ${getStatusText(event.status)}
+                  </span>
+                  <span class="ml-4 text-gray-800 font-medium">
+                    ${event.attendeesCount} / ${event.capacity} attendees
+                  </span>
+                  <button onclick="toggleEventDetails(this)" class="ml-4 text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                </div>
               </div>
+              <div class="event-details mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Description</p>
+                    <p class="text-gray-800 mt-1">${event.description}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Details</p>
+                    <p class="text-gray-800 mt-1">
+                      <div>${formatDate(event.startDate)} ${
+              event.startTime ? formatTime(event.startTime) : ''
+            }</div>
+                      <div>to ${formatDate(event.endDate)} ${
+              event.endTime ? formatTime(event.endTime) : ''
+            }</div>
+                      <div>${event.location}</div>
+                      ${
+                        event.isPublic
+                          ? '<div class="text-green-600">Public Event</div>'
+                          : '<div class="text-blue-600">Private Event</div>'
+                      }
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Attendance</p>
+                    <p class="text-gray-800 mt-1">
+                      <div>${event.attendeesCount} registered</div>
+                      <div>${
+                        event.capacity - event.attendeesCount
+                      } spots remaining</div>
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${
+                          (event.attendeesCount / event.capacity) * 100
+                        }%"></div>
+                      </div>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex justify-end mt-4 space-x-2">
+                  <button class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-lg transition">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <button class="text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1.5 px-3 rounded-lg transition">
+                    <i class="fas fa-trash mr-1"></i> Delete
+                  </button>
+                </div>
+              </div>
+            </div>
           `
           )
           .join('');
       }
 
-      // Render recent attendees
+      // Render recent attendees with real data
       function renderRecentAttendees() {
         const container = document.getElementById('recent-attendees-container');
 
-        if (appState.attendees.length === 0) {
+        if (
+          !appState.analytics ||
+          !appState.analytics.recentAttendees ||
+          appState.analytics.recentAttendees.length === 0
+        ) {
           container.innerHTML =
-            '<div class="p-6 text-center text-gray-500">No attendees found</div>';
+            '<div class="p-6 text-center text-gray-500">No recent attendees found</div>';
           return;
         }
 
-        container.innerHTML = appState.attendees
+        container.innerHTML = appState.analytics.recentAttendees
           .map(
-            (attendee) => `
-              <div class="p-4 hover:bg-gray-50 transition">
-                  <div class="flex items-center">
-                      <div class="w-10 h-10 rounded-full ${getInitialsColor(
-                        attendee.id
-                      )} flex items-center justify-center text-white font-medium mr-4">
-                          ${getInitials(attendee.name)}
-                      </div>
-                      <div class="flex-1">
-                          <h4 class="font-medium text-gray-800">${
-                            attendee.name
-                          }</h4>
-                          <p class="text-sm text-gray-500">${attendee.email}</p>
-                      </div>
-                      <div class="text-sm text-gray-500">${
-                        attendee.eventName
-                      }</div>
-                      <div class="ml-4">
-                          <span class="${getAttendeeStatusClass(
-                            attendee.status
-                          )}">
-                              ${getAttendeeStatusText(attendee.status)}
-                          </span>
-                      </div>
-                  </div>
-              </div>
-          `
+            (attendee, index) => `
+      <div class="p-4 hover:bg-gray-50 transition water-slide" style="opacity: 0; animation-delay: ${
+        index * 0.1
+      }s">
+        <div class="flex items-center">
+          <div class="w-10 h-10 rounded-full ${getInitialsColor(
+            index
+          )} flex items-center justify-center text-white font-medium mr-4">
+            ${getInitials(attendee.name)}
+          </div>
+          <div class="flex-1">
+            <h4 class="font-medium text-gray-800">${attendee.name}</h4>
+            <p class="text-sm text-gray-500">${attendee.email}</p>
+          </div>
+          <div class="text-sm text-gray-500">${attendee.eventName}</div>
+          <div class="ml-4">
+            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800">
+              Registered
+            </span>
+          </div>
+        </div>
+      </div>
+    `
           )
           .join('');
       }
@@ -1068,30 +1243,41 @@
           e.preventDefault();
 
           const formData = {
-            title: document.getElementById('event-title').value,
+            name: document.getElementById('event-title').value,
             description: document.getElementById('event-description').value,
             startDate: document.getElementById('event-start-date').value,
             endDate: document.getElementById('event-end-date').value,
+            startTime: document.getElementById('event-start-time').value,
+            endTime: document.getElementById('event-end-time').value,
             location: document.getElementById('event-location').value,
             capacity: document.getElementById('event-capacity').value,
-            organizer: appState.user.name,
-            status: 'upcoming',
+            isPublic: document.getElementById('event-is-public').checked,
           };
 
           try {
-            const response = await mockApi.addEvent(formData);
-            if (response.success) {
-              alert(response.message);
-              appState.events.push(response.event);
-              updateDashboardStats();
-              renderRecentEvents();
-              populateEventDropdown();
-              hideAddEventModal();
-              this.reset();
+            const response = await fetch('http://localhost:5000/api/v1/event', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || 'Failed to create event');
             }
+
+            alert('Event created successfully!');
+            // Refresh the events list
+            await loadAllData();
+            hideAddEventModal();
+            this.reset();
           } catch (error) {
             console.error('Error adding event:', error);
-            alert('Failed to add event. Please try again.');
+            alert(error.message || 'Failed to add event. Please try again.');
           }
         });
 
