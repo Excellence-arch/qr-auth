@@ -39,7 +39,7 @@
         qrContainer.innerHTML = '';
         
         try {
-          const res = await fetch("https://qr-auth-be.onrender.com/api/v1/generate", {
+          const res = await fetch("https://qr-auth-be.onrender.com/api/v1/qr/generate", {
             method: "POST",
           });
           const data = await res.json();

@@ -71,16 +71,17 @@
 
             try {
                 // In a real app, this would be an actual API call
-                // const response = await fetch(`http://localhost:5000/api/v1/qr/validate/${qrId}`);
+                const response = await fetch(`https://qr-auth-be.onrender.com/api/v1/qr/validate/${qrId}`);
                 
                 // For demo purposes, we'll simulate different responses
-                const responses = [
-                    { status: 'success', message: 'Verification successful!' },
-                    { status: 'error', message: 'This QR code has already been used' },
-                    { status: 'error', message: 'Invalid QR code' }
-                ];
+                // const responses = [
+                   // { status: 'success', message: 'Verification successful!' },
+                   // { status: 'error', message: 'This QR code has already been used' },
+                   // { status: 'error', message: 'Invalid QR code' }
+                //];
                 
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                //const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                const randomResponse = await response.json();
                 
                 if (randomResponse.status === 'success') {
                     showResult('Success!', randomResponse.message, 'success');
