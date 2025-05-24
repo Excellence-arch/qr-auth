@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: {
+                            400: '#2dd4bf',
+                            500: '#0d9488',
+                        },
+                        blue: {
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            border-top-color: #2563eb;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-teal-400 to-blue-600 min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md text-center transition-all duration-300 transform hover:scale-[1.02]">
+        <div id="verificationContainer">
+            <!-- Loading State -->
+            <div class="flex flex-col items-center">
+                <div class="spinner h-12 w-12 rounded-full border-4 border-gray-200 mb-4"></div>
+                <h2 class="text-2xl font-bold text-gray-800">Verifying QR Code</h2>
+                <p class="text-gray-600 mt-2">Please wait while we verify your code...</p>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-6">
+                    <div class="bg-blue-600 h-2.5 rounded-full animate-pulse" style="width: 45%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Extract QR code ID from URL
+        function getQRId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Verify the QR code with the backend
+        async function verifyQR() {
+            const qrId = getQRId();
+            const verificationContainer = document.getElementById('verificationContainer');
+            
+            // Simulate network delay for demo
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            if (!qrId) {
+                showResult('Invalid QR Code', 'No ID provided in the URL', 'error');
+                return;
+            }
+
+            try {
+                // In a real app, this would be an actual API call
+                // const response = await fetch(`http://localhost:5000/api/v1/qr/validate/${qrId}`);
+                
+                // For demo purposes, we'll simulate different responses
+                const responses = [
+                    { status: 'success', message: 'Verification successful!' },
+                    { status: 'error', message: 'This QR code has already been used' },
+                    { status: 'error', message: 'Invalid QR code' }
+                ];
+                
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                
+                if (randomResponse.status === 'success') {
+                    showResult('Success!', randomResponse.message, 'success');
+                } else {
+                    showResult('Error', randomResponse.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Verification error:', error);
+                showResult('Connection Error', 'Failed to verify QR code', 'error');
+            }
+        }
+
+        // Show verification result
+        function showResult(title, message, type) {
+            const verificationContainer = document.getElementById('verificationContainer');
+            
+            const icon = type === 'success' ? 
+                `<svg class="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>` :
+                `<svg class="h-16 w-16 text-red-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>`;
+            
+            const buttonColor = type === 'success' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-teal-500 hover:bg-teal-600';
+            
+            verificationContainer.innerHTML = `
+                <div class="flex flex-col items-center">
+                    ${icon}
+                    <h2 class="text-2xl font-bold text-gray-800">${title}</h2>
+                    <p class="text-gray-600 mt-2">${message}</p>
+                    <button onclick="window.location.href='qr-generator.html'" 
+                            class="mt-6 ${buttonColor} text-white px-6 py-3 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Generate New QR Code
+                    </button>
+                    <div class="mt-4 text-sm text-gray-500">
+                        ID: ${getQRId() || 'N/A'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Start verification when page loads
+        window.onload = verifyQR;
+    </script>
+</body>
+</html>

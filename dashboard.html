@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>EventPass - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .page-transition {
+        transition: all 0.3s ease;
+      }
+      .hidden-page {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+      }
+      .active-page {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        background-color: white;
+        min-width: 200px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+      .dropdown-menu.show {
+        display: block;
+      }
+      .event-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+      }
+      .event-details.show {
+        max-height: 500px;
+        transition: max-height 0.5s ease-in;
+      }
+      .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid #3498db;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen font-sans">
+    <!-- Dashboard Layout -->
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <div
+        class="w-64 bg-gradient-to-b from-teal-500 to-blue-600 text-white shadow-lg"
+      >
+        <div
+          class="p-4 flex items-center justify-center border-b border-white/20"
+        >
+          <div class="bg-white/20 p-3 rounded-full mr-3">
+            <i class="fas fa-calendar-check text-xl"></i>
+          </div>
+          <h1 class="text-xl font-bold">EventPass</h1>
+        </div>
+        <nav class="p-4">
+          <div class="mb-8">
+            <div class="relative group">
+              <div
+                class="flex items-center justify-between p-3 rounded-lg group-hover:bg-white/10 cursor-pointer transition"
+              >
+                <div class="flex items-center">
+                  <div
+                    class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center mr-3"
+                  >
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <div>
+                    <p
+                      class="font-medium"
+                      id="username-display"
+                    >
+                      Loading...
+                    </p>
+                    <p class="text-xs opacity-80">Admin</p>
+                  </div>
+                </div>
+                <i class="fas fa-chevron-down text-xs"></i>
+              </div>
+              <div class="dropdown-menu mt-1">
+                <a
+                  href="profile.html"
+                  class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
+                  ><i class="fas fa-user mr-2"></i> Profile</a
+                >
+                <a
+                  href="settings.html"
+                  class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
+                  ><i class="fas fa-cog mr-2"></i> Settings</a
+                >
+                <a
+                  href="#"
+                  onclick="logout()"
+                  class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
+                  ><i class="fas fa-sign-out-alt mr-2"></i> Logout</a
+                >
+              </div>
+            </div>
+          </div>
+          <ul>
+            <li class="mb-2">
+              <a
+                href="dashboard.html"
+                class="flex items-center p-3 rounded-lg bg-white/10"
+              >
+                <i class="fas fa-home mr-3"></i>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="mb-2">
+              <a
+                href="events.html"
+                class="flex items-center p-3 rounded-lg hover:bg-white/10 transition"
+              >
+                <i class="fas fa-calendar-alt mr-3"></i>
+                <span>My Events</span>
+              </a>
+            </li>
+            <li class="mb-2">
+              <a
+                href="attendees.html"
+                class="flex items-center p-3 rounded-lg hover:bg-white/10 transition"
+              >
+                <i class="fas fa-users mr-3"></i>
+                <span>Attendees</span>
+              </a>
+            </li>
+            <li class="mb-2">
+              <a
+                href="reports.html"
+                class="flex items-center p-3 rounded-lg hover:bg-white/10 transition"
+              >
+                <i class="fas fa-chart-bar mr-3"></i>
+                <span>Reports</span>
+              </a>
+            </li>
+            <li class="mb-2">
+              <a
+                href="settings.html"
+                class="flex items-center p-3 rounded-lg hover:bg-white/10 transition"
+              >
+                <i class="fas fa-cog mr-3"></i>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 overflow-auto">
+        <!-- Header -->
+        <header
+          class="bg-white shadow-sm p-4 flex justify-between items-center"
+        >
+          <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
+          <div class="flex items-center space-x-4">
+            <button
+              onclick="showAddEventModal()"
+              class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+            >
+              <i class="fas fa-plus mr-2"></i> Add Event
+            </button>
+            <button
+              onclick="showAddAttendeeModal()"
+              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+            >
+              <i class="fas fa-user-plus mr-2"></i> Add Attendee
+            </button>
+          </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <main class="p-6">
+          <!-- Stats Cards -->
+          <div
+            class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+            id="stats-cards"
+          >
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500">Total Events</p>
+                  <h3
+                    class="text-3xl font-bold text-gray-800"
+                    id="total-events"
+                  >
+                    0
+                  </h3>
+                </div>
+                <div class="bg-teal-100 p-3 rounded-full">
+                  <i class="fas fa-calendar text-teal-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500">Total Attendees</p>
+                  <h3
+                    class="text-3xl font-bold text-gray-800"
+                    id="total-attendees"
+                  >
+                    0
+                  </h3>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                  <i class="fas fa-users text-blue-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-500">Upcoming Events</p>
+                  <h3
+                    class="text-3xl font-bold text-gray-800"
+                    id="upcoming-events"
+                  >
+                    0
+                  </h3>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                  <i class="fas fa-clock text-purple-600 text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Events -->
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+            <div class="p-6 border-b border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-800">Recent Events</h3>
+            </div>
+            <div
+              class="divide-y divide-gray-100"
+              id="recent-events-container"
+            >
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+
+          <!-- Recent Attendees -->
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div
+              class="p-6 border-b border-gray-100 flex justify-between items-center"
+            >
+              <h3 class="text-lg font-semibold text-gray-800">
+                Recent Attendees
+              </h3>
+              <a
+                href="attendees.html"
+                class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                >View All</a
+              >
+            </div>
+            <div
+              class="divide-y divide-gray-100"
+              id="recent-attendees-container"
+            >
+              <div class="loading-spinner"></div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Add Event Modal -->
+    <div
+      id="add-event-modal"
+      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800">Add New Event</h3>
+          <button
+            onclick="hideAddEventModal()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form
+          id="add-event-form"
+          class="space-y-4"
+        >
+          <div>
+            <label
+              for="event-title"
+              class="block mb-2 font-medium text-gray-700"
+              >Event Title</label
+            >
+            <input
+              type="text"
+              id="event-title"
+              required
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              for="event-description"
+              class="block mb-2 font-medium text-gray-700"
+              >Description</label
+            >
+            <textarea
+              id="event-description"
+              rows="3"
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            ></textarea>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label
+                for="event-start-date"
+                class="block mb-2 font-medium text-gray-700"
+                >Start Date</label
+              >
+              <input
+                type="date"
+                id="event-start-date"
+                required
+                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+            <div>
+              <label
+                for="event-end-date"
+                class="block mb-2 font-medium text-gray-700"
+                >End Date</label
+              >
+              <input
+                type="date"
+                id="event-end-date"
+                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              for="event-location"
+              class="block mb-2 font-medium text-gray-700"
+              >Location</label
+            >
+            <input
+              type="text"
+              id="event-location"
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              for="event-capacity"
+              class="block mb-2 font-medium text-gray-700"
+              >Capacity</label
+            >
+            <input
+              type="number"
+              id="event-capacity"
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onclick="hideAddEventModal()"
+              class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-teal-600 hover:bg-teal-700 rounded-lg font-medium text-white transition"
+            >
+              Save Event
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Attendee Modal -->
+    <div
+      id="add-attendee-modal"
+      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden"
+    >
+      <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold text-gray-800">Add New Attendee</h3>
+          <button
+            onclick="hideAddAttendeeModal()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form
+          id="add-attendee-form"
+          class="space-y-4"
+        >
+          <div>
+            <label
+              for="attendee-name"
+              class="block mb-2 font-medium text-gray-700"
+              >Full Name</label
+            >
+            <input
+              type="text"
+              id="attendee-name"
+              required
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              for="attendee-email"
+              class="block mb-2 font-medium text-gray-700"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="attendee-email"
+              required
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              for="attendee-phone"
+              class="block mb-2 font-medium text-gray-700"
+              >Phone</label
+            >
+            <input
+              type="tel"
+              id="attendee-phone"
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <div>
+            <label
+              for="attendee-event"
+              class="block mb-2 font-medium text-gray-700"
+              >Event</label
+            >
+            <select
+              id="attendee-event"
+              required
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Select an event</option>
+            </select>
+          </div>
+          <div>
+            <label
+              for="attendee-ticket"
+              class="block mb-2 font-medium text-gray-700"
+              >Ticket Type</label
+            >
+            <select
+              id="attendee-ticket"
+              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="standard">Standard</option>
+              <option value="vip">VIP</option>
+              <option value="student">Student</option>
+            </select>
+          </div>
+          <div class="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onclick="hideAddAttendeeModal()"
+              class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-white transition"
+            >
+              Add Attendee
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Mock API data
+      const mockApi = {
+        getUser: () => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                id: 1,
+                username: 'Oluwayimika',
+                email: 'john.doe@example.com',
+                role: 'Admin',
+              });
+            }, 500);
+          });
+        },
+
+        getEvents: () => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve([
+                {
+                  id: 1,
+                  title: 'Tech Conference 2023',
+                  description:
+                    'Annual technology conference featuring the latest innovations in AI, blockchain, and cloud computing.',
+                  startDate: '2023-10-15',
+                  endDate: '2023-10-17',
+                  location: 'Moscone Center, San Francisco',
+                  organizer: 'Tech Events Inc.',
+                  capacity: 500,
+                  attendees: 142,
+                  status: 'active',
+                },
+                {
+                  id: 2,
+                  title: 'Marketing Summit',
+                  description:
+                    'Learn from industry leaders about the latest trends in digital marketing and brand strategy.',
+                  startDate: '2023-11-05',
+                  endDate: '2023-11-06',
+                  location: 'Javits Center, New York',
+                  organizer: 'Marketing Pros LLC',
+                  capacity: 300,
+                  attendees: 89,
+                  status: 'completed',
+                },
+                {
+                  id: 3,
+                  title: 'Developer Workshop',
+                  description:
+                    'Hands-on workshop for developers to learn modern web development techniques.',
+                  startDate: '2023-12-10',
+                  endDate: '2023-12-10',
+                  location: 'Virtual Event',
+                  organizer: 'Code Masters',
+                  capacity: 100,
+                  attendees: 56,
+                  status: 'upcoming',
+                },
+              ]);
+            }, 600);
+          });
+        },
+
+        getAttendees: () => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve([
+                {
+                  id: 1,
+                  name: 'John Doe',
+                  email: 'john.doe@example.com',
+                  phone: '+1 555-123-4567',
+                  eventId: 1,
+                  eventName: 'Tech Conference 2023',
+                  status: 'checked-in',
+                  registrationDate: '2023-09-15',
+                },
+                {
+                  id: 2,
+                  name: 'Alice Smith',
+                  email: 'alice.smith@example.com',
+                  phone: '+1 555-987-6543',
+                  eventId: 2,
+                  eventName: 'Marketing Summit',
+                  status: 'registered',
+                  registrationDate: '2023-10-20',
+                },
+                {
+                  id: 3,
+                  name: 'Robert Johnson',
+                  email: 'robert.j@example.com',
+                  phone: '+1 555-456-7890',
+                  eventId: 3,
+                  eventName: 'Developer Workshop',
+                  status: 'cancelled',
+                  registrationDate: '2023-11-05',
+                },
+              ]);
+            }, 700);
+          });
+        },
+
+        addEvent: (eventData) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                success: true,
+                message: 'Event added successfully!',
+                event: {
+                  id: Math.floor(Math.random() * 1000) + 4,
+                  ...eventData,
+                },
+              });
+            }, 800);
+          });
+        },
+
+        addAttendee: (attendeeData) => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              resolve({
+                success: true,
+                message: 'Attendee added successfully!',
+                attendee: {
+                  id: Math.floor(Math.random() * 1000) + 4,
+                  ...attendeeData,
+                },
+              });
+            }, 800);
+          });
+        },
+      };
+
+      // Global state
+      let appState = {
+        user: null,
+        events: [],
+        attendees: [],
+      };
+
+      // Load all data when DOM is loaded
+      document.addEventListener('DOMContentLoaded', async function () {
+        //const authToken = localStorage.getItem('authToken');
+        //if (!authToken) {
+          //window.location.href = 'index.html';
+        //}
+
+        // Initialize dropdown menus
+        initDropdowns();
+
+        // Load all data
+        await loadAllData();
+      });
+
+      // Initialize dropdown menus
+      function initDropdowns() {
+        const dropdownToggles = document.querySelectorAll('.group');
+        dropdownToggles.forEach((toggle) => {
+          toggle.addEventListener('click', function (e) {
+            const menu = this.querySelector('.dropdown-menu');
+            menu.classList.toggle('show');
+
+            // Close other dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach((otherMenu) => {
+              if (otherMenu !== menu) {
+                otherMenu.classList.remove('show');
+              }
+            });
+          });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function (e) {
+          if (!e.target.closest('.group')) {
+            document.querySelectorAll('.dropdown-menu').forEach((menu) => {
+              menu.classList.remove('show');
+            });
+          }
+        });
+      }
+
+      // Load all data from API
+      async function loadAllData() {
+        try {
+          // Load user data
+          const user = await mockApi.getUser();
+          appState.user = user;
+          document.getElementById('username-display').textContent = user.username;
+
+          // Load events
+          const events = await mockApi.getEvents();
+          appState.events = events;
+
+          // Load attendees
+          const attendees = await mockApi.getAttendees();
+          appState.attendees = attendees;
+
+          // Update UI with loaded data
+          updateDashboardStats();
+          renderRecentEvents();
+          renderRecentAttendees();
+          populateEventDropdown();
+        } catch (error) {
+          console.error('Error loading data:', error);
+          alert('Failed to load data. Please try again.');
+        }
+      }
+
+      // Update dashboard statistics
+      function updateDashboardStats() {
+        const totalEvents = appState.events.length;
+        const totalAttendees = appState.attendees.length;
+        const upcomingEvents = appState.events.filter(
+          (event) => event.status === 'upcoming'
+        ).length;
+
+        document.getElementById('total-events').textContent = totalEvents;
+        document.getElementById('total-attendees').textContent = totalAttendees;
+        document.getElementById('upcoming-events').textContent = upcomingEvents;
+      }
+
+      // Render recent events
+      function renderRecentEvents() {
+        const container = document.getElementById('recent-events-container');
+
+        if (appState.events.length === 0) {
+          container.innerHTML =
+            '<div class="p-6 text-center text-gray-500">No events found</div>';
+          return;
+        }
+
+        container.innerHTML = appState.events
+          .map(
+            (event) => `
+              <div class="p-6 hover:bg-gray-50 transition cursor-pointer">
+                  <div class="flex items-center justify-between">
+                      <div>
+                          <h4 class="font-medium text-gray-800">${
+                            event.title
+                          }</h4>
+                          <p class="text-sm text-gray-500 mt-1">
+                              ${formatDateRange(
+                                event.startDate,
+                                event.endDate
+                              )} • ${event.location}
+                          </p>
+                      </div>
+                      <div class="flex items-center">
+                          <span class="${getStatusClass(event.status)}">
+                              ${getStatusText(event.status)}
+                          </span>
+                          <span class="ml-4 text-gray-800 font-medium">${
+                            event.attendees
+                          } attendees</span>
+                          <button onclick="toggleEventDetails(this)" class="ml-4 text-gray-400 hover:text-gray-600">
+                              <i class="fas fa-chevron-down"></i>
+                          </button>
+                      </div>
+                  </div>
+                  <div class="event-details mt-4">
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                          <div>
+                              <p class="text-sm text-gray-500">Description</p>
+                              <p class="text-gray-800 mt-1">${
+                                event.description
+                              }</p>
+                          </div>
+                          <div>
+                              <p class="text-sm text-gray-500">Venue</p>
+                              <p class="text-gray-800 mt-1">${
+                                event.location
+                              }</p>
+                          </div>
+                          <div>
+                              <p class="text-sm text-gray-500">Organizer</p>
+                              <p class="text-gray-800 mt-1">${
+                                event.organizer
+                              }</p>
+                          </div>
+                      </div>
+                      <div class="flex justify-end mt-4 space-x-2">
+                          <button class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-1.5 px-3 rounded-lg transition">
+                              <i class="fas fa-edit mr-1"></i> Edit
+                          </button>
+                          <button class="text-sm bg-red-100 hover:bg-red-200 text-red-800 font-medium py-1.5 px-3 rounded-lg transition">
+                              <i class="fas fa-trash mr-1"></i> Delete
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          `
+          )
+          .join('');
+      }
+
+      // Render recent attendees
+      function renderRecentAttendees() {
+        const container = document.getElementById('recent-attendees-container');
+
+        if (appState.attendees.length === 0) {
+          container.innerHTML =
+            '<div class="p-6 text-center text-gray-500">No attendees found</div>';
+          return;
+        }
+
+        container.innerHTML = appState.attendees
+          .map(
+            (attendee) => `
+              <div class="p-4 hover:bg-gray-50 transition">
+                  <div class="flex items-center">
+                      <div class="w-10 h-10 rounded-full ${getInitialsColor(
+                        attendee.id
+                      )} flex items-center justify-center text-white font-medium mr-4">
+                          ${getInitials(attendee.name)}
+                      </div>
+                      <div class="flex-1">
+                          <h4 class="font-medium text-gray-800">${
+                            attendee.name
+                          }</h4>
+                          <p class="text-sm text-gray-500">${attendee.email}</p>
+                      </div>
+                      <div class="text-sm text-gray-500">${
+                        attendee.eventName
+                      }</div>
+                      <div class="ml-4">
+                          <span class="${getAttendeeStatusClass(
+                            attendee.status
+                          )}">
+                              ${getAttendeeStatusText(attendee.status)}
+                          </span>
+                      </div>
+                  </div>
+              </div>
+          `
+          )
+          .join('');
+      }
+
+      // Populate event dropdown in add attendee modal
+      function populateEventDropdown() {
+        const select = document.getElementById('attendee-event');
+
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+
+        // Add events from state
+        appState.events.forEach((event) => {
+          const option = document.createElement('option');
+          option.value = event.id;
+          option.textContent = event.title;
+          select.appendChild(option);
+        });
+      }
+
+      // Helper functions
+      function formatDateRange(startDate, endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        if (startDate === endDate) {
+          return start.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          });
+        }
+
+        if (
+          start.getMonth() === end.getMonth() &&
+          start.getFullYear() === end.getFullYear()
+        ) {
+          return `${start.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+          })}-${end.toLocaleDateString('en-US', {
+            day: 'numeric',
+            year: 'numeric',
+          })}`;
+        }
+
+        if (start.getFullYear() === end.getFullYear()) {
+          return `${start.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+          })} - ${end.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}`;
+        }
+
+        return `${start.toLocaleDateString()} - ${end.toLocaleDateString()}`;
+      }
+
+      function getStatusClass(status) {
+        const classes = {
+          active: 'bg-blue-100 text-blue-800',
+          completed: 'bg-green-100 text-green-800',
+          upcoming: 'bg-yellow-100 text-yellow-800',
+          cancelled: 'bg-red-100 text-red-800',
+        };
+        return `text-xs font-medium px-2.5 py-0.5 rounded-full ${
+          classes[status] || 'bg-gray-100 text-gray-800'
+        }`;
+      }
+
+      function getStatusText(status) {
+        const texts = {
+          active: 'Active',
+          completed: 'Completed',
+          upcoming: 'Upcoming',
+          cancelled: 'Cancelled',
+        };
+        return texts[status] || status;
+      }
+
+      function getAttendeeStatusClass(status) {
+        const classes = {
+          'checked-in': 'bg-green-100 text-green-800',
+          registered: 'bg-yellow-100 text-yellow-800',
+          cancelled: 'bg-red-100 text-red-800',
+          waiting: 'bg-gray-100 text-gray-800',
+        };
+        return `text-xs font-medium px-2.5 py-0.5 rounded-full ${
+          classes[status] || 'bg-gray-100 text-gray-800'
+        }`;
+      }
+
+      function getAttendeeStatusText(status) {
+        const texts = {
+          'checked-in': 'Checked In',
+          registered: 'Registered',
+          cancelled: 'Cancelled',
+          waiting: 'Waiting List',
+        };
+        return texts[status] || status;
+      }
+
+      function getInitials(name) {
+        return name
+          .split(' ')
+          .map((part) => part[0])
+          .join('')
+          .toUpperCase();
+      }
+
+      function getInitialsColor(id) {
+        const colors = [
+          'bg-teal-500',
+          'bg-blue-500',
+          'bg-purple-500',
+          'bg-pink-500',
+          'bg-red-500',
+          'bg-orange-500',
+          'bg-yellow-500',
+          'bg-green-500',
+          'bg-indigo-500',
+        ];
+        return colors[id % colors.length];
+      }
+
+      // Toggle event details
+      function toggleEventDetails(button) {
+        const eventItem = button.closest('.p-6');
+        const details = eventItem.querySelector('.event-details');
+        details.classList.toggle('show');
+
+        const icon = button.querySelector('i');
+        if (details.classList.contains('show')) {
+          icon.classList.remove('fa-chevron-down');
+          icon.classList.add('fa-chevron-up');
+        } else {
+          icon.classList.remove('fa-chevron-up');
+          icon.classList.add('fa-chevron-down');
+        }
+      }
+
+      // Add Event Modal
+      function showAddEventModal() {
+        document.getElementById('add-event-modal').classList.remove('hidden');
+      }
+
+      function hideAddEventModal() {
+        document.getElementById('add-event-modal').classList.add('hidden');
+      }
+
+      // Add Attendee Modal
+      function showAddAttendeeModal() {
+        document
+          .getElementById('add-attendee-modal')
+          .classList.remove('hidden');
+      }
+
+      function hideAddAttendeeModal() {
+        document.getElementById('add-attendee-modal').classList.add('hidden');
+      }
+
+      // Form submissions
+      document
+        .getElementById('add-event-form')
+        .addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const formData = {
+            title: document.getElementById('event-title').value,
+            description: document.getElementById('event-description').value,
+            startDate: document.getElementById('event-start-date').value,
+            endDate: document.getElementById('event-end-date').value,
+            location: document.getElementById('event-location').value,
+            capacity: document.getElementById('event-capacity').value,
+            organizer: appState.user.name,
+            status: 'upcoming',
+          };
+
+          try {
+            const response = await mockApi.addEvent(formData);
+            if (response.success) {
+              alert(response.message);
+              appState.events.push(response.event);
+              updateDashboardStats();
+              renderRecentEvents();
+              populateEventDropdown();
+              hideAddEventModal();
+              this.reset();
+            }
+          } catch (error) {
+            console.error('Error adding event:', error);
+            alert('Failed to add event. Please try again.');
+          }
+        });
+
+      document
+        .getElementById('add-attendee-form')
+        .addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const formData = {
+            name: document.getElementById('attendee-name').value,
+            email: document.getElementById('attendee-email').value,
+            phone: document.getElementById('attendee-phone').value,
+            eventId: parseInt(document.getElementById('attendee-event').value),
+            ticketType: document.getElementById('attendee-ticket').value,
+            status: 'registered',
+          };
+
+          // Find event name
+          const selectedEvent = appState.events.find(
+            (event) => event.id === formData.eventId
+          );
+          if (selectedEvent) {
+            formData.eventName = selectedEvent.title;
+          }
+
+          try {
+            const response = await mockApi.addAttendee(formData);
+            if (response.success) {
+              alert(response.message);
+              appState.attendees.push(response.attendee);
+              updateDashboardStats();
+              renderRecentAttendees();
+              hideAddAttendeeModal();
+              this.reset();
+            }
+          } catch (error) {
+            console.error('Error adding attendee:', error);
+            alert('Failed to add attendee. Please try again.');
+          }
+        });
+
+      // Logout function
+      function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('username');
+        window.location.href = 'index.html';
+      }
+    </script>
+  </body>
+</html>

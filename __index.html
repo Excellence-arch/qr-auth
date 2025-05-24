@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventPass - Your Gateway to Events</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .page-transition {
+            transition: all 0.3s ease;
+        }
+        .hidden-page {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+        .active-page {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-teal-400 to-blue-600 min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
+    <!-- Landing Page -->
+    <div id="landing-page" class="page-transition active-page w-full max-w-4xl">
+        <div class="text-center mb-12">
+            <div class="flex justify-center mb-6">
+                <div class="bg-white/20 p-4 rounded-full">
+                    <i class="fas fa-calendar-check text-4xl"></i>
+                </div>
+            </div>
+            <h1 class="text-5xl font-bold mb-4">EventPass</h1>
+            <p class="text-xl opacity-90 mb-8">Your gateway to unforgettable experiences. Register for events or manage your existing bookings.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 card-hover">
+                <div class="flex justify-center mb-6">
+                    <i class="fas fa-user-plus text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold mb-4">Register for an Event</h2>
+                <p class="mb-6 opacity-90">Create your event pass by registering with your details and the event you want to attend.</p>
+                <button onclick="showPage('register-page')" class="w-full bg-white text-teal-600 hover:bg-gray-100 font-bold py-3 px-4 rounded-lg transition">
+                    Register Now
+                </button>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 card-hover">
+                <div class="flex justify-center mb-6">
+                    <i class="fas fa-sign-in-alt text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold mb-4">Login to Your Event</h2>
+                <p class="mb-6 opacity-90">Already registered? Login to access your event details and manage your pass.</p>
+                <button onclick="showPage('login-page')" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 px-4 rounded-lg transition">
+                    Login Now
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-12 text-center opacity-80 text-sm">
+            <p>Join thousands of attendees at our premium events worldwide.</p>
+        </div>
+    </div>
+
+    <!-- Register Page -->
+    <div id="register-page" class="page-transition hidden-page w-full max-w-md">
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
+            <button onclick="showPage('landing-page')" class="mb-6 text-white hover:text-gray-200 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div class="bg-white/20 p-3 rounded-full">
+                        <i class="fas fa-user-plus text-2xl"></i>
+                    </div>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">Event Registration</h2>
+                <p class="opacity-90">Create your event pass</p>
+            </div>
+
+            <form id="register-form" class="space-y-6">
+                <div>
+                    <label for="register-username" class="block mb-2 font-medium">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input type="text" id="register-username" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="event-name" class="block mb-2 font-medium">Event Name</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <input type="text" id="event-name" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="register-password" class="block mb-2 font-medium">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="register-password" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="confirm-password" class="block mb-2 font-medium">Confirm Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="confirm-password" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 font-bold py-3 px-4 rounded-lg transition">
+                    Register <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm opacity-80">
+                <p>Already have an account? <button onclick="showPage('login-page')" class="text-white font-medium hover:underline">Login here</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page-transition hidden-page w-full max-w-md">
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8">
+            <button onclick="showPage('landing-page')" class="mb-6 text-white hover:text-gray-200 transition">
+                <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div class="bg-white/20 p-3 rounded-full">
+                        <i class="fas fa-sign-in-alt text-2xl"></i>
+                    </div>
+                </div>
+                <h2 class="text-3xl font-bold mb-2">Welcome Back</h2>
+                <p class="opacity-90">Login to your event dashboard</p>
+            </div>
+
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="login-username" class="block mb-2 font-medium">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <input type="text" id="login-username" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="login-password" class="block mb-2 font-medium">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="login-password" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                        <label for="remember-me" class="ml-2 block text-sm">Remember me</label>
+                    </div>
+                    <button type="button" class="text-sm font-medium hover:underline">Forgot password?</button>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 px-4 rounded-lg transition">
+                    Login <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm opacity-80">
+                <p>Don't have an account? <button onclick="showPage('register-page')" class="text-white font-medium hover:underline">Register here</button></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="flex justify-center mb-6">
+                <div class="bg-green-100 p-4 rounded-full">
+                    <i class="fas fa-check-circle text-green-600 text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4" id="success-title">Success!</h3>
+            <p class="text-gray-600 mb-6" id="success-message">Your action was completed successfully.</p>
+            <button onclick="hideModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4 text-center">
+            <div class="flex justify-center mb-6">
+                <div class="bg-red-100 p-4 rounded-full">
+                    <i class="fas fa-exclamation-circle text-red-600 text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4" id="error-title">Error!</h3>
+            <p class="text-gray-600 mb-6" id="error-message">An error occurred while processing your request.</p>
+            <button onclick="hideErrorModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Page navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page-transition').forEach(page => {
+                page.classList.remove('active-page');
+                page.classList.add('hidden-page');
+            });
+            
+            const page = document.getElementById(pageId);
+            page.classList.remove('hidden-page');
+            setTimeout(() => {
+                page.classList.add('active-page');
+            }, 10);
+        }
+
+        // Form handling
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const eventName = document.getElementById('event-name').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            // Client-side validation
+            if (!username || !eventName || !password || !confirmPassword) {
+                showErrorModal('Registration Error', 'All fields are required.');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showErrorModal('Registration Error', 'Passwords do not match. Please try again.');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showErrorModal('Registration Error', 'Password must be at least 6 characters long.');
+                return;
+            }
+
+            try {
+                const res = await fetch("https://qr-auth-be.onrender.com/api/v1/auth/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        eventName: eventName,
+                        password: password,
+                    }),
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    showErrorModal('Registration Error', data.message || 'Registration failed. Please try again.');
+                    return;
+                }
+                
+                showModal('Registration Successful', 'Your registration has been completed successfully!');
+                document.getElementById('register-form').reset();
+                showPage('login-page');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorModal('Registration Error', 'An error occurred while processing your request. Please try again later.');
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Client-side validation
+            if (!username || !password) {
+                showErrorModal('Login Error', 'Both username and password are required.');
+                return;
+            }
+
+            try {
+                const res = await fetch("https://qr-auth-be.onrender.com/api/v1/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                    }),
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    showErrorModal('Login Error', data.message || 'Login failed. Please check your credentials and try again.');
+                    return;
+                }
+                
+                showModal('Login Successful', 'Welcome back! You have successfully logged in.');
+                // Store the token in localStorage or cookies
+                localStorage.setItem('authToken', data.token);
+                // Redirect to dashboard after a short delay
+                setTimeout(() => {
+                    window.location.href = "dashboard.html";
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorModal('Login Error', 'An error occurred while processing your request. Please try again later.');
+            }
+        });
+
+        // Modal functions
+        function showModal(title, message) {
+            document.getElementById('success-title').textContent = title;
+            document.getElementById('success-message').textContent = message;
+            document.getElementById('success-modal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+        }
+
+        function showErrorModal(title, message) {
+            document.getElementById('error-title').textContent = title;
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-modal').classList.remove('hidden');
+        }
+
+        function hideErrorModal() {
+            document.getElementById('error-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
