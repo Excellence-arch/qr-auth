@@ -1,70 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>QR Code Generator</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventPass - Your Gateway to Events</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gradient-to-r from-teal-400 to-blue-600 min-h-screen flex flex-col items-center justify-center text-white font-sans">
-    <h1 class="text-4xl font-bold mb-6">QR Code Generator</h1>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="bg-gradient-to-r from-teal-400 to-blue-600 min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
+    <div class="page-transition active-page w-full max-w-4xl">
+        <div class="text-center mb-12">
+            <div class="flex justify-center mb-6">
+                <div class="bg-white/20 p-4 rounded-full">
+                    <i class="fas fa-calendar-check text-4xl"></i>
+                </div>
+            </div>
+            <h1 class="text-5xl font-bold mb-4">EventPass</h1>
+            <p class="text-xl opacity-90 mb-8">Your gateway to unforgettable experiences. Register for events or manage your existing bookings.</p>
+        </div>
 
-    <button
-      onclick="generateQR()"
-      id="generateBtn"
-      class="bg-white text-blue-600 hover:bg-blue-100 font-semibold py-3 px-6 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center"
-    >
-      <span id="btnText">Generate</span>
-      <svg id="spinner" class="hidden w-5 h-5 ml-2 text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-    </button>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 card-hover">
+                <div class="flex justify-center mb-6">
+                    <i class="fas fa-user-plus text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold mb-4">Register for an Event</h2>
+                <p class="mb-6 opacity-90">Create your event pass by registering with your details and the event you want to attend.</p>
+                <a href="register.html" class="block w-full bg-white text-teal-600 hover:bg-gray-100 font-bold py-3 px-4 rounded-lg transition text-center">
+                    Register Now
+                </a>
+            </div>
 
-    <div
-      id="qrContainer"
-      class="mt-8 bg-white p-6 rounded-xl shadow-xl text-center text-black"
-    ></div>
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-8 card-hover">
+                <div class="flex justify-center mb-6">
+                    <i class="fas fa-sign-in-alt text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-semibold mb-4">Login to Your Event</h2>
+                <p class="mb-6 opacity-90">Already registered? Login to access your event details and manage your pass.</p>
+                <a href="login.html" class="block w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 px-4 rounded-lg transition text-center">
+                    Login Now
+                </a>
+            </div>
+        </div>
 
-    <script>
-      async function generateQR() {
-        const btn = document.getElementById('generateBtn');
-        const btnText = document.getElementById('btnText');
-        const spinner = document.getElementById('spinner');
-        const qrContainer = document.getElementById('qrContainer');
-        
-        // Show spinner and disable button
-        btn.disabled = true;
-        btnText.textContent = 'Generating...';
-        spinner.classList.remove('hidden');
-        qrContainer.innerHTML = '';
-        
-        try {
-          const res = await fetch("https://qr-auth-be.onrender.com/api/v1/qr/generate", {
-            method: "POST",
-          });
-          const data = await res.json();
-          
-          qrContainer.innerHTML = `
-            <img src="${data.qrImage}" alt="QR Code" class="mx-auto mb-4" />
-            <a 
-              href="${data.qrImage}" 
-              download="qr-code.png"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            >
-              Download QR
-            </a>
-          `;
-        } catch (error) {
-          qrContainer.innerHTML = `
-            <p class="text-red-500">Error generating QR code. Please try again.</p>
-          `;
-        } finally {
-          // Reset button state
-          btn.disabled = false;
-          btnText.textContent = 'Generate';
-          spinner.classList.add('hidden');
-        }
-      }
-    </script>
-  </body>
+        <div class="mt-12 text-center opacity-80 text-sm">
+            <p>Join thousands of attendees at our premium events worldwide.</p>
+        </div>
+    </div>
+
+    <script src="assets/js/main.js"></script>
+</body>
 </html>

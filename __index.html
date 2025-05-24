@@ -29,6 +29,13 @@
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gradient-to-r from-teal-400 to-blue-600 min-h-screen flex flex-col items-center justify-center text-white font-sans p-4">
@@ -102,12 +109,12 @@
                 </div>
 
                 <div>
-                    <label for="event-name" class="block mb-2 font-medium">Event Name</label>
+                    <label for="email" class="block mb-2 font-medium">Email</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-calendar"></i>
                         </div>
-                        <input type="text" id="event-name" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
+                        <input type="text" id="email" required class="w-full bg-white/20 border border-white/30 rounded-lg pl-10 p-3 focus:outline-none focus:ring-2 focus:ring-white">
                     </div>
                 </div>
 
@@ -131,8 +138,10 @@
                     </div>
                 </div>
 
-                <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 font-bold py-3 px-4 rounded-lg transition">
-                    Register <i class="fas fa-arrow-right ml-2"></i>
+                <button type="submit" id="register-button" class="w-full bg-teal-500 hover:bg-teal-600 font-bold py-3 px-4 rounded-lg transition flex items-center justify-center">
+                    <span id="register-text">Register</span>
+                    <i id="register-icon" class="fas fa-arrow-right ml-2"></i>
+                    <i id="register-spinner" class="fas fa-spinner spinner ml-2 hidden"></i>
                 </button>
             </form>
 
@@ -188,8 +197,10 @@
                     <button type="button" class="text-sm font-medium hover:underline">Forgot password?</button>
                 </div>
 
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 px-4 rounded-lg transition">
-                    Login <i class="fas fa-arrow-right ml-2"></i>
+                <button type="submit" id="login-button" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 px-4 rounded-lg transition flex items-center justify-center">
+                    <span id="login-text">Login</span>
+                    <i id="login-icon" class="fas fa-arrow-right ml-2"></i>
+                    <i id="login-spinner" class="fas fa-spinner spinner ml-2 hidden"></i>
                 </button>
             </form>
 
@@ -226,7 +237,7 @@
             <h3 class="text-2xl font-bold text-gray-800 mb-4" id="error-title">Error!</h3>
             <p class="text-gray-600 mb-6" id="error-message">An error occurred while processing your request.</p>
             <button onclick="hideErrorModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition">
-                Try Again
+                Close
             </button>
         </div>
     </div>
@@ -250,35 +261,50 @@
         document.getElementById('register-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const username = document.getElementById('register-username').value;
-            const eventName = document.getElementById('event-name').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('register-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             
+            // Get button elements
+            const registerButton = document.getElementById('register-button');
+            const registerText = document.getElementById('register-text');
+            const registerIcon = document.getElementById('register-icon');
+            const registerSpinner = document.getElementById('register-spinner');
+            
+            // Disable button and show spinner
+            registerButton.disabled = true;
+            registerIcon.classList.add('hidden');
+            registerSpinner.classList.remove('hidden');
+            registerText.textContent = 'Processing...';
+            
             // Client-side validation
-            if (!username || !eventName || !password || !confirmPassword) {
+            if (!username || !email || !password || !confirmPassword) {
                 showErrorModal('Registration Error', 'All fields are required.');
+                resetRegisterButton();
                 return;
             }
             
             if (password !== confirmPassword) {
                 showErrorModal('Registration Error', 'Passwords do not match. Please try again.');
+                resetRegisterButton();
                 return;
             }
             
             if (password.length < 6) {
                 showErrorModal('Registration Error', 'Password must be at least 6 characters long.');
+                resetRegisterButton();
                 return;
             }
 
             try {
-                const res = await fetch("https://qr-auth-be.onrender.com/api/v1/auth/register", {
+                const res = await fetch("http://localhost:5000/api/v1/auth/register", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({
                         username: username,
-                        eventName: eventName,
+                        email: email,
                         password: password,
                     }),
                 });
@@ -287,16 +313,19 @@
                 
                 if (!res.ok) {
                     showErrorModal('Registration Error', data.message || 'Registration failed. Please try again.');
+                    resetRegisterButton();
                     return;
                 }
                 
                 showModal('Registration Successful', 'Your registration has been completed successfully!');
                 document.getElementById('register-form').reset();
+                resetRegisterButton();
                 showPage('login-page');
                 
             } catch (error) {
                 console.error('Error:', error);
                 showErrorModal('Registration Error', 'An error occurred while processing your request. Please try again later.');
+                resetRegisterButton();
             }
         });
 
@@ -305,14 +334,27 @@
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
             
+            // Get button elements
+            const loginButton = document.getElementById('login-button');
+            const loginText = document.getElementById('login-text');
+            const loginIcon = document.getElementById('login-icon');
+            const loginSpinner = document.getElementById('login-spinner');
+            
+            // Disable button and show spinner
+            loginButton.disabled = true;
+            loginIcon.classList.add('hidden');
+            loginSpinner.classList.remove('hidden');
+            loginText.textContent = 'Logging in...';
+            
             // Client-side validation
             if (!username || !password) {
                 showErrorModal('Login Error', 'Both username and password are required.');
+                resetLoginButton();
                 return;
             }
 
             try {
-                const res = await fetch("https://qr-auth-be.onrender.com/api/v1/auth/login", {
+                const res = await fetch("http://localhost:5000/api/v1/auth/login", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -327,12 +369,15 @@
                 
                 if (!res.ok) {
                     showErrorModal('Login Error', data.message || 'Login failed. Please check your credentials and try again.');
+                    resetLoginButton();
                     return;
                 }
                 
                 showModal('Login Successful', 'Welcome back! You have successfully logged in.');
                 // Store the token in localStorage or cookies
                 localStorage.setItem('authToken', data.token);
+                // Reset button state
+                resetLoginButton();
                 // Redirect to dashboard after a short delay
                 setTimeout(() => {
                     window.location.href = "dashboard.html";
@@ -341,8 +386,35 @@
             } catch (error) {
                 console.error('Error:', error);
                 showErrorModal('Login Error', 'An error occurred while processing your request. Please try again later.');
+                resetLoginButton();
             }
         });
+
+        // Reset register button to original state
+        function resetRegisterButton() {
+            const registerButton = document.getElementById('register-button');
+            const registerText = document.getElementById('register-text');
+            const registerIcon = document.getElementById('register-icon');
+            const registerSpinner = document.getElementById('register-spinner');
+            
+            registerButton.disabled = false;
+            registerSpinner.classList.add('hidden');
+            registerIcon.classList.remove('hidden');
+            registerText.textContent = 'Register';
+        }
+
+        // Reset login button to original state
+        function resetLoginButton() {
+            const loginButton = document.getElementById('login-button');
+            const loginText = document.getElementById('login-text');
+            const loginIcon = document.getElementById('login-icon');
+            const loginSpinner = document.getElementById('login-spinner');
+            
+            loginButton.disabled = false;
+            loginSpinner.classList.add('hidden');
+            loginIcon.classList.remove('hidden');
+            loginText.textContent = 'Login';
+        }
 
         // Modal functions
         function showModal(title, message) {

@@ -528,17 +528,41 @@
     <script>
       // Mock API data
       const mockApi = {
-        getUser: () => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                id: 1,
-                username: 'Oluwayimika',
-                email: 'john.doe@example.com',
-                role: 'Admin',
-              });
-            }, 500);
-          });
+        getUser: async () => {
+          const userData = await fetch(
+            `http://localhost:5000/api/v1/auth/user`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+            }
+          );
+          if (!userData.ok) {
+            window.location.href = 'login.html';
+          }
+          const user = await userData.json();
+          return user.data.user;
+        },
+
+        getDashboardAnalytics: async () => {
+          const response = await fetch(
+            `http://localhost:5000/api/v1/auth/user/dashboard-analytics`,
+            {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch dashboard analytics');
+          }
+
+          return await response.json();
         },
 
         getEvents: () => {
@@ -664,14 +688,15 @@
         user: null,
         events: [],
         attendees: [],
+        analytics: null,
       };
 
       // Load all data when DOM is loaded
       document.addEventListener('DOMContentLoaded', async function () {
-        //const authToken = localStorage.getItem('authToken');
-        //if (!authToken) {
-          //window.location.href = 'index.html';
-        //}
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          window.location.href = 'index.html';
+        }
 
         // Initialize dropdown menus
         initDropdowns();
@@ -713,7 +738,14 @@
           // Load user data
           const user = await mockApi.getUser();
           appState.user = user;
-          document.getElementById('username-display').textContent = user.username;
+          document.getElementById('username-display').textContent =
+            user.username;
+
+          const analytics = await mockApi.getDashboardAnalytics();
+          appState.analytics = analytics.data; // Assuming your API returns { success: true, data: {...} }
+
+          // Update UI with loaded data
+          updateDashboardStats();
 
           // Load events
           const events = await mockApi.getEvents();
@@ -736,15 +768,19 @@
 
       // Update dashboard statistics
       function updateDashboardStats() {
-        const totalEvents = appState.events.length;
-        const totalAttendees = appState.attendees.length;
-        const upcomingEvents = appState.events.filter(
-          (event) => event.status === 'upcoming'
-        ).length;
+        if (!appState.analytics) return;
 
-        document.getElementById('total-events').textContent = totalEvents;
-        document.getElementById('total-attendees').textContent = totalAttendees;
-        document.getElementById('upcoming-events').textContent = upcomingEvents;
+        document.getElementById('total-events').textContent =
+          appState.analytics.totalEvents || 0;
+
+        document.getElementById('total-attendees').textContent =
+          appState.analytics.totalAttendees || 0;
+
+        document.getElementById('upcoming-events').textContent =
+          appState.analytics.upcomingEvents?.length || 0;
+
+        // If upcomingEvents is an array of objects, you might want to set it to:
+        // appState.upcomingEvents = appState.analytics.upcomingEvents;
       }
 
       // Render recent events
