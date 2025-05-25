@@ -8,9 +8,14 @@
     />
     <title>EventPass - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./assets/js/main.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="./assets/css/style.css"
     />
     <style>
       .count-up {
@@ -211,9 +216,10 @@
                 <a
                   href="#"
                   onclick="logout()"
-                  class="block px-4 py-3 text-gray-700 hover:bg-gray-100"
-                  ><i class="fas fa-sign-out-alt mr-2"></i> Logout</a
+                  class="block px-4 py-3 text-gray-700 hover:bg-gray-100 relative"
                 >
+                  <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
               </div>
             </div>
           </div>
@@ -277,13 +283,13 @@
           <div class="flex items-center space-x-4">
             <button
               onclick="showAddEventModal()"
-              class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+              class="relative bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
             >
               <i class="fas fa-plus mr-2"></i> Add Event
             </button>
             <button
               onclick="showAddAttendeeModal()"
-              class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+              class="relative bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
             >
               <i class="fas fa-user-plus mr-2"></i> Add Attendee
             </button>
@@ -655,76 +661,6 @@
     </div>
 
     <script>
-      // Mock API data
-      const mockApi = {
-        getUser: async () => {
-          const userData = await fetch(
-            `http://localhost:5000/api/v1/auth/user`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-              },
-            }
-          );
-          if (!userData.ok) {
-            window.location.href = 'login.html';
-          }
-          const user = await userData.json();
-          return user.data.user;
-        },
-
-        getDashboardAnalytics: async () => {
-          const response = await fetch(
-            `http://localhost:5000/api/v1/auth/user/dashboard-analytics`,
-            {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error('Failed to fetch dashboard analytics');
-          }
-
-          return await response.json();
-        },
-
-        addEvent: (eventData) => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                success: true,
-                message: 'Event added successfully!',
-                event: {
-                  id: Math.floor(Math.random() * 1000) + 4,
-                  ...eventData,
-                },
-              });
-            }, 800);
-          });
-        },
-
-        addAttendee: (attendeeData) => {
-          return new Promise((resolve) => {
-            setTimeout(() => {
-              resolve({
-                success: true,
-                message: 'Attendee added successfully!',
-                attendee: {
-                  id: Math.floor(Math.random() * 1000) + 4,
-                  ...attendeeData,
-                },
-              });
-            }, 800);
-          });
-        },
-      };
-
       // Global state
       let appState = {
         user: null,
@@ -732,6 +668,9 @@
         attendees: [],
         analytics: null,
       };
+
+      // API base URL
+      const API_BASE_URL = 'http://localhost:5000/api/v1';
 
       // Load all data when DOM is loaded
       document.addEventListener('DOMContentLoaded', async function () {
@@ -746,7 +685,6 @@
         // Load all data
         await loadAllData();
       });
-
       // Initialize dropdown menus
       function initDropdowns() {
         const dropdownToggles = document.querySelectorAll('.group');
@@ -775,33 +713,57 @@
       }
 
       // Load all data from API
-      // Load all data from API
       async function loadAllData() {
         try {
           // Show loading state
           document.getElementById('recent-events-container').innerHTML = `
-      <div class="p-6 flex justify-center">
-        <div class="wave-loading">
-          <div></div><div></div><div></div>
-        </div>
-      </div>`;
+        <div class="p-6 flex justify-center">
+          <div class="wave-loading">
+            <div></div><div></div><div></div>
+          </div>
+        </div>`;
 
           document.getElementById('recent-attendees-container').innerHTML = `
-      <div class="p-6 flex justify-center">
-        <div class="wave-loading">
-          <div></div><div></div><div></div>
-        </div>
-      </div>`;
+        <div class="p-6 flex justify-center">
+          <div class="wave-loading">
+            <div></div><div></div><div></div>
+          </div>
+        </div>`;
 
           // Load user data
-          const user = await mockApi.getUser();
-          appState.user = user;
+          const userResponse = await fetch(`${API_BASE_URL}/auth/user`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            },
+          });
+          if (!userResponse.ok) {
+            window.location.href = 'login.html';
+          }
+          const userData = await userResponse.json();
+          appState.user = userData.data.user;
           document.getElementById('username-display').textContent =
-            user.username;
+            appState.user.username;
+
+          // Load user's events
+          const eventsResponse = await fetch(`${API_BASE_URL}/event/account`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            },
+          });
+          const eventsData = await eventsResponse.json();
+          appState.events = eventsData.data.events;
 
           // Load analytics data
-          const analytics = await mockApi.getDashboardAnalytics();
-          appState.analytics = analytics.data;
+          const analyticsResponse = await fetch(
+            `${API_BASE_URL}/auth/user/dashboard-analytics`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+            }
+          );
+          const analyticsData = await analyticsResponse.json();
+          appState.analytics = analyticsData.data;
 
           // Update UI with loaded data
           updateDashboardStats();
@@ -810,9 +772,76 @@
           populateEventDropdown();
         } catch (error) {
           console.error('Error loading data:', error);
-          alert('Failed to load data. Please try again.');
+          showToast('Failed to load data. Please try again.', 'error');
         }
       }
+
+      // Populate event dropdown in add attendee modal
+      function populateEventDropdown() {
+        const select = document.getElementById('attendee-event');
+
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+
+        // Add events from state
+        appState.events.forEach((event) => {
+          const option = document.createElement('option');
+          option.value = event._id;
+          option.textContent = event.name;
+          select.appendChild(option);
+        });
+      }
+
+      // Form submissions
+      document
+        .getElementById('add-attendee-form')
+        .addEventListener('submit', async function (e) {
+          e.preventDefault();
+
+          const submitButton = this.querySelector('button[type="submit"]');
+          setButtonLoading(submitButton, true);
+
+          const formData = {
+            name: document.getElementById('attendee-name').value,
+            email: document.getElementById('attendee-email').value,
+            phone: document.getElementById('attendee-phone').value,
+            eventId: document.getElementById('attendee-event').value,
+            ticketType: document.getElementById('attendee-ticket').value,
+            code: { used: false },
+          };
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/attendee/add`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+              },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(data.message || 'Failed to add attendee');
+            }
+
+            showToast('Attendee added successfully!', 'success');
+            await loadAllData(); // Refresh data
+            hideAddAttendeeModal();
+            this.reset();
+          } catch (error) {
+            console.error('Error adding attendee:', error);
+            showToast(
+              error.message || 'Failed to add attendee. Please try again.',
+              'error'
+            );
+          } finally {
+            setButtonLoading(submitButton, false);
+          }
+        });
 
       // Update dashboard statistics
       function updateDashboardStats() {
@@ -1088,7 +1117,7 @@
         appState.events.forEach((event) => {
           const option = document.createElement('option');
           option.value = event.id;
-          option.textContent = event.title;
+          option.textContent = event.name;
           select.appendChild(option);
         });
       }
@@ -1242,6 +1271,9 @@
         .addEventListener('submit', async function (e) {
           e.preventDefault();
 
+          const submitButton = this.querySelector('button[type="submit"]');
+          setButtonLoading(submitButton, true);
+
           const formData = {
             name: document.getElementById('event-title').value,
             description: document.getElementById('event-description').value,
@@ -1270,61 +1302,39 @@
               throw new Error(data.message || 'Failed to create event');
             }
 
-            alert('Event created successfully!');
+            showToast('Event created successfully!', 'success');
             // Refresh the events list
             await loadAllData();
             hideAddEventModal();
             this.reset();
           } catch (error) {
             console.error('Error adding event:', error);
-            alert(error.message || 'Failed to add event. Please try again.');
-          }
-        });
-
-      document
-        .getElementById('add-attendee-form')
-        .addEventListener('submit', async function (e) {
-          e.preventDefault();
-
-          const formData = {
-            name: document.getElementById('attendee-name').value,
-            email: document.getElementById('attendee-email').value,
-            phone: document.getElementById('attendee-phone').value,
-            eventId: parseInt(document.getElementById('attendee-event').value),
-            ticketType: document.getElementById('attendee-ticket').value,
-            status: 'registered',
-          };
-
-          // Find event name
-          const selectedEvent = appState.events.find(
-            (event) => event.id === formData.eventId
-          );
-          if (selectedEvent) {
-            formData.eventName = selectedEvent.title;
-          }
-
-          try {
-            const response = await mockApi.addAttendee(formData);
-            if (response.success) {
-              alert(response.message);
-              appState.attendees.push(response.attendee);
-              updateDashboardStats();
-              renderRecentAttendees();
-              hideAddAttendeeModal();
-              this.reset();
-            }
-          } catch (error) {
-            console.error('Error adding attendee:', error);
-            alert('Failed to add attendee. Please try again.');
+            showToast(
+              error.message || 'Failed to add event. Please try again.',
+              'error'
+            );
+          } finally {
+            setButtonLoading(submitButton, false);
           }
         });
 
       // Logout function
       function logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('username');
-        window.location.href = 'index.html';
+        const logoutButton = document.querySelector('a[onclick="logout()"]');
+        setButtonLoading(logoutButton, true);
+
+        showToast('Logging out...', 'info', 2000);
+        setTimeout(() => {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('username');
+          window.location.href = 'index.html';
+        }, 2000);
       }
     </script>
+    <!-- Toast Notifications Container -->
+    <div
+      id="toast-container"
+      class="toast-container"
+    ></div>
   </body>
 </html>
