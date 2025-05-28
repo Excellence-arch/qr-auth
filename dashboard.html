@@ -8,6 +8,7 @@
     />
     <title>EventPass - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./assets/js/utilities.js"></script>
     <script src="./assets/js/main.js"></script>
     <link
       rel="stylesheet"
@@ -56,7 +57,7 @@
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
           0 10px 10px -5px rgba(0, 0, 0, 0.04);
       }
-      
+
       .event-details {
         max-height: 0;
         overflow: hidden;
@@ -161,7 +162,6 @@
         Rest of your content
       </div>
     </div> -->
-    
 
       <!-- Main Content -->
       <div class="flex-1 overflow-auto">
@@ -169,21 +169,24 @@
         <header
           class="bg-white shadow-sm p-4 flex justify-between items-center"
         >
+          
           <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
-          <div class="flex items-center space-x-4">
+          <div class="flex space-x-3">
             <button
-              onclick="showAddEventModal()"
-              class="relative bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+              id="add-event-btn"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
             >
-              <i class="fas fa-plus mr-2"></i> Add Event
+              <i class="fas fa-plus mr-1"></i> Add Event
             </button>
             <button
-              onclick="showAddAttendeeModal()"
-              class="relative bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+              id="add-attendee-btn"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
             >
-              <i class="fas fa-user-plus mr-2"></i> Add Attendee
+              <i class="fas fa-user-plus mr-1"></i> Add Attendee
             </button>
           </div>
+          <div id="add-event-modal-container"></div>
+          <div id="add-attendee-modal-container"></div>
         </header>
 
         <!-- Dashboard Content -->
@@ -287,274 +290,22 @@
       </div>
     </div>
 
-    <!-- Add Event Modal -->
-    <div
-      id="add-event-modal"
-      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden overflow-y-auto py-8"
-    >
-      <div
-        class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-      >
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-gray-800">Add New Event</h3>
-          <button
-            onclick="hideAddEventModal()"
-            class="text-gray-400 hover:text-gray-600"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <form
-          id="add-event-form"
-          class="space-y-4"
-        >
-          <div>
-            <label
-              for="event-title"
-              class="block mb-2 font-medium text-gray-700"
-              >Event Title</label
-            >
-            <input
-              type="text"
-              id="event-title"
-              required
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div>
-            <label
-              for="event-description"
-              class="block mb-2 font-medium text-gray-700"
-              >Description</label
-            >
-            <textarea
-              id="event-description"
-              rows="3"
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            ></textarea>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                for="event-start-date"
-                class="block mb-2 font-medium text-gray-700"
-                >Start Date</label
-              >
-              <input
-                type="date"
-                id="event-start-date"
-                required
-                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-            <div>
-              <label
-                for="event-end-date"
-                class="block mb-2 font-medium text-gray-700"
-                >End Date</label
-              >
-              <input
-                type="date"
-                id="event-end-date"
-                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label
-                for="event-start-time"
-                class="block mb-2 font-medium text-gray-700"
-                >Start Time</label
-              >
-              <input
-                type="time"
-                id="event-start-time"
-                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-            <div>
-              <label
-                for="event-end-time"
-                class="block mb-2 font-medium text-gray-700"
-                >End Time</label
-              >
-              <input
-                type="time"
-                id="event-end-time"
-                class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-              />
-            </div>
-          </div>
-          <div>
-            <label
-              for="event-location"
-              class="block mb-2 font-medium text-gray-700"
-              >Location</label
-            >
-            <input
-              type="text"
-              id="event-location"
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div>
-            <label
-              for="event-capacity"
-              class="block mb-2 font-medium text-gray-700"
-              >Capacity</label
-            >
-            <input
-              type="number"
-              id="event-capacity"
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-
-          <div class="flex items-center mt-4">
-            <input
-              type="checkbox"
-              id="event-is-public"
-              checked
-              class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label
-              for="event-is-public"
-              class="ml-2 text-sm font-medium text-gray-700"
-              >Public Event</label
-            >
-          </div>
-
-          <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onclick="hideAddEventModal()"
-              class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-teal-600 hover:bg-teal-700 rounded-lg font-medium text-white transition"
-            >
-              Save Event
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Add Attendee Modal -->
-    <div
-      id="add-attendee-modal"
-      class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden"
-    >
-      <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-gray-800">Add New Attendee</h3>
-          <button
-            onclick="hideAddAttendeeModal()"
-            class="text-gray-400 hover:text-gray-600"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <form
-          id="add-attendee-form"
-          class="space-y-4"
-        >
-          <div>
-            <label
-              for="attendee-name"
-              class="block mb-2 font-medium text-gray-700"
-              >Full Name</label
-            >
-            <input
-              type="text"
-              id="attendee-name"
-              required
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div>
-            <label
-              for="attendee-email"
-              class="block mb-2 font-medium text-gray-700"
-              >Email</label
-            >
-            <input
-              type="email"
-              id="attendee-email"
-              required
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div>
-            <label
-              for="attendee-phone"
-              class="block mb-2 font-medium text-gray-700"
-              >Phone</label
-            >
-            <input
-              type="tel"
-              id="attendee-phone"
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            />
-          </div>
-          <div>
-            <label
-              for="attendee-event"
-              class="block mb-2 font-medium text-gray-700"
-              >Event</label
-            >
-            <select
-              id="attendee-event"
-              required
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
-              <option value="">Select an event</option>
-            </select>
-          </div>
-          <div>
-            <label
-              for="attendee-ticket"
-              class="block mb-2 font-medium text-gray-700"
-              >Ticket Type</label
-            >
-            <select
-              id="attendee-ticket"
-              class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
-              <option value="standard">Standard</option>
-              <option value="vip">VIP</option>
-              <option value="student">Student</option>
-            </select>
-          </div>
-          <div class="flex justify-end space-x-3 pt-4">
-            <button
-              type="button"
-              onclick="hideAddAttendeeModal()"
-              class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium text-white transition"
-            >
-              Add Attendee
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <script src="./assets/js/sidebar.js"></script>
 
     <script>
-      
+      // Load modals
+      fetch('add-event-modal.html')
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById('add-event-modal-container').innerHTML = data;
+        });
 
+      fetch('add-attendee-modal.html')
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById('add-attendee-modal-container').innerHTML =
+            data;
+        });
       // API base URL
       // const API_BASE_URL = 'http://localhost:5000/api/v1';
 
@@ -568,7 +319,6 @@
         // Load all data
         await loadAllData();
       });
-      
 
       // Load all data from API
       async function loadAllData() {
@@ -589,7 +339,6 @@
         </div>`;
 
           // appState.user = await loadUserData();
-          
 
           // Load user's events
           const eventsResponse = await fetch(`${API_BASE_URL}/event/account`, {
@@ -641,54 +390,46 @@
         });
       }
 
-      // Form submissions
-      document
-        .getElementById('add-attendee-form')
-        .addEventListener('submit', async function (e) {
-          e.preventDefault();
+      function showAddEventModal() {
+        document.getElementById('add-event-modal').classList.remove('hidden');
+      }
 
-          const submitButton = this.querySelector('button[type="submit"]');
-          setButtonLoading(submitButton, true);
+      function hideAddEventModal() {
+        document.getElementById('add-event-modal').classList.add('hidden');
+      }
 
-          const formData = {
-            name: document.getElementById('attendee-name').value,
-            email: document.getElementById('attendee-email').value,
-            phone: document.getElementById('attendee-phone').value,
-            eventId: document.getElementById('attendee-event').value,
-            ticketType: document.getElementById('attendee-ticket').value,
-            code: { used: false },
-          };
+      function showAddAttendeeModal() {
+        document
+          .getElementById('add-attendee-modal')
+          .classList.remove('hidden');
+      }
 
-          try {
-            const response = await fetch(`${API_BASE_URL}/attendee/add`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-              },
-              body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              throw new Error(data.message || 'Failed to add attendee');
+      function hideAddAttendeeModal() {
+        document.getElementById('add-attendee-modal').classList.add('hidden');
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+        // Add Event button click handler
+        document
+          .getElementById('add-event-btn')
+          ?.addEventListener('click', function () {
+            const modal = document.getElementById('add-event-modal');
+            if (modal) {
+              showAddEventModal();
             }
+          });
 
-            showToast('Attendee added successfully!', 'success');
-            await loadAllData(); // Refresh data
-            hideAddAttendeeModal();
-            this.reset();
-          } catch (error) {
-            console.error('Error adding attendee:', error);
-            showToast(
-              error.message || 'Failed to add attendee. Please try again.',
-              'error'
-            );
-          } finally {
-            setButtonLoading(submitButton, false);
-          }
-        });
+        
+
+        // Add Attendee button click handler
+        document
+          .getElementById('add-attendee-btn')
+          ?.addEventListener('click', function () {
+            const modal = document.getElementById('add-attendee-modal');
+            if (modal) {
+              showAddAttendeeModal();
+            }
+          });
+      });
 
       // Update dashboard statistics
       function updateDashboardStats() {
@@ -1091,81 +832,6 @@
           icon.classList.add('fa-chevron-down');
         }
       }
-
-      // Add Event Modal
-      function showAddEventModal() {
-        document.getElementById('add-event-modal').classList.remove('hidden');
-      }
-
-      function hideAddEventModal() {
-        document.getElementById('add-event-modal').classList.add('hidden');
-      }
-
-      // Add Attendee Modal
-      function showAddAttendeeModal() {
-        document
-          .getElementById('add-attendee-modal')
-          .classList.remove('hidden');
-      }
-
-      function hideAddAttendeeModal() {
-        document.getElementById('add-attendee-modal').classList.add('hidden');
-      }
-
-      // Form submissions
-      document
-        .getElementById('add-event-form')
-        .addEventListener('submit', async function (e) {
-          e.preventDefault();
-
-          const submitButton = this.querySelector('button[type="submit"]');
-          setButtonLoading(submitButton, true);
-
-          const formData = {
-            name: document.getElementById('event-title').value,
-            description: document.getElementById('event-description').value,
-            startDate: document.getElementById('event-start-date').value,
-            endDate: document.getElementById('event-end-date').value,
-            startTime: document.getElementById('event-start-time').value,
-            endTime: document.getElementById('event-end-time').value,
-            location: document.getElementById('event-location').value,
-            capacity: document.getElementById('event-capacity').value,
-            isPublic: document.getElementById('event-is-public').checked,
-          };
-
-          try {
-            const response = await fetch('http://localhost:5000/api/v1/event', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-              },
-              body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-              throw new Error(data.message || 'Failed to create event');
-            }
-
-            showToast('Event created successfully!', 'success');
-            // Refresh the events list
-            await loadAllData();
-            hideAddEventModal();
-            this.reset();
-          } catch (error) {
-            console.error('Error adding event:', error);
-            showToast(
-              error.message || 'Failed to add event. Please try again.',
-              'error'
-            );
-          } finally {
-            setButtonLoading(submitButton, false);
-          }
-        });
-
-      
     </script>
     <!-- Toast Notifications Container -->
     <div

@@ -1,0 +1,226 @@
+<!-- add-event-modal.html -->
+<div
+  id="add-event-modal"
+  class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden overflow-y-auto py-8"
+>
+  <div
+    class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+  >
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="text-xl font-bold text-gray-800">Add New Event</h3>
+      <button
+        onclick="hideAddEventModal()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form
+      id="add-event-form"
+      class="space-y-4"
+    >
+      <div>
+        <label
+          for="event-title"
+          class="block mb-2 font-medium text-gray-700"
+          >Event Title</label
+        >
+        <input
+          type="text"
+          id="event-title"
+          required
+          class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        />
+      </div>
+      <div>
+        <label
+          for="event-description"
+          class="block mb-2 font-medium text-gray-700"
+          >Description</label
+        >
+        <textarea
+          id="event-description"
+          rows="3"
+          class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        ></textarea>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            for="event-start-date"
+            class="block mb-2 font-medium text-gray-700"
+            >Start Date</label
+          >
+          <input
+            type="date"
+            id="event-start-date"
+            required
+            class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+        <div>
+          <label
+            for="event-end-date"
+            class="block mb-2 font-medium text-gray-700"
+            >End Date</label
+          >
+          <input
+            type="date"
+            id="event-end-date"
+            class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            for="event-start-time"
+            class="block mb-2 font-medium text-gray-700"
+            >Start Time</label
+          >
+          <input
+            type="time"
+            id="event-start-time"
+            class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+        <div>
+          <label
+            for="event-end-time"
+            class="block mb-2 font-medium text-gray-700"
+            >End Time</label
+          >
+          <input
+            type="time"
+            id="event-end-time"
+            class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+        </div>
+      </div>
+      <div>
+        <label
+          for="event-location"
+          class="block mb-2 font-medium text-gray-700"
+          >Location</label
+        >
+        <input
+          type="text"
+          id="event-location"
+          class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        />
+      </div>
+      <div>
+        <label
+          for="event-capacity"
+          class="block mb-2 font-medium text-gray-700"
+          >Capacity</label
+        >
+        <input
+          type="number"
+          id="event-capacity"
+          class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-teal-500"
+        />
+      </div>
+
+      <div class="flex items-center mt-4">
+        <input
+          type="checkbox"
+          id="event-is-public"
+          checked
+          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+        />
+        <label
+          for="event-is-public"
+          class="ml-2 text-sm font-medium text-gray-700"
+          >Public Event</label
+        >
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-4">
+        <button
+          type="button"
+          onclick="hideAddEventModal()"
+          class="px-4 py-2 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 bg-teal-600 hover:bg-teal-700 rounded-lg font-medium text-white transition"
+        >
+          Save Event
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Add Event Modal functions
+  function showAddEventModal() {
+    document.getElementById('add-event-modal').classList.remove('hidden');
+  }
+
+  function hideAddEventModal() {
+    document.getElementById('add-event-modal').classList.add('hidden');
+  }
+
+  // Form submission
+  document
+    .getElementById('add-event-form')
+    .addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const submitButton = this.querySelector('button[type="submit"]');
+      setButtonLoading(submitButton, true);
+
+      const formData = {
+        name: document.getElementById('event-title').value,
+        description: document.getElementById('event-description').value,
+        startDate: document.getElementById('event-start-date').value,
+        endDate: document.getElementById('event-end-date').value,
+        startTime: document.getElementById('event-start-time').value,
+        endTime: document.getElementById('event-end-time').value,
+        location: document.getElementById('event-location').value,
+        capacity: document.getElementById('event-capacity').value,
+        isPublic: document.getElementById('event-is-public').checked,
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/api/v1/event', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to create event');
+        }
+
+        showToast('Event created successfully!', 'success');
+        // Refresh the events list
+        if (typeof loadEvents === 'function') {
+          await loadEvents();
+        }
+        if (typeof loadAllData === 'function') {
+          await loadAllData();
+        }
+        hideAddEventModal();
+        this.reset();
+      } catch (error) {
+        console.error('Error adding event:', error);
+        showToast(
+          error.message || 'Failed to add event. Please try again.',
+          'error'
+        );
+      } finally {
+        setButtonLoading(submitButton, false);
+      }
+    });
+</script>

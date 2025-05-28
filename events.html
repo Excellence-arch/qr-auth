@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventPass - My Events</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./assets/js/utilities.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .event-card {
+      transition: all 0.3s ease;
+    }
+    .event-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+    }
+    .status-upcoming {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    .status-ongoing {
+      background-color: #dbeafe;
+      color: #1e40af;
+    }
+    .status-completed {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+    .status-active {
+      background-color: #fce7f3;
+      color: #9d174d;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+  <div id="add-event-modal-container"></div>
+  <div class="flex h-screen">
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+      <!-- Header -->
+      <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">My Events</h2>
+        <button
+          onclick="showAddEventModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center"
+        >
+          <i class="fas fa-plus mr-2"></i> Add New Event
+        </button>
+      </header>
+
+      <!-- Events Content -->
+      <main class="p-6">
+        <!-- Filter and Search -->
+        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div class="flex space-x-2">
+            <button 
+              onclick="filterEvents('all')" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg"
+            >
+              All
+            </button>
+            <button 
+              onclick="filterEvents('upcoming')" 
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+            >
+              Upcoming
+            </button>
+            <button 
+              onclick="filterEvents('ongoing')" 
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+            >
+              Ongoing
+            </button>
+            <button 
+              onclick="filterEvents('completed')" 
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg"
+            >
+              Completed
+            </button>
+          </div>
+          <div class="relative w-full md:w-64">
+            <input
+              type="text"
+              id="search-events"
+              placeholder="Search events..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              oninput="searchEvents()"
+            >
+            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Events Grid -->
+        <div id="events-container">
+          <div class="loading-spinner"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+
+  <!-- Scripts -->
+   <script src="./assets/js/sidebar.js"></script>
+  <script>
+
+      // Load event modal
+      fetch('add-event-modal.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('add-event-modal-container').innerHTML = data;
+        });
+    
+    // Global state
+    let eventsState = {
+      allEvents: [],
+      filteredEvents: [],
+    };
+
+
+    // Load events when DOM is loaded
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadEvents();
+    });
+
+    // Load events from API
+    async function loadEvents() {
+      try {
+        const response = await fetch('http://localhost:5000/api/v1/event/account', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+
+        const data = await response.json();
+        eventsState.allEvents = data.data.events;
+        eventsState.filteredEvents = [...eventsState.allEvents];
+        
+        renderEvents();
+      } catch (error) {
+        console.error('Error loading events:', error);
+        document.getElementById('events-container').innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm p-6 text-center text-red-500">
+            Failed to load events. Please try again.
+          </div>
+        `;
+      }
+    }
+
+    // Render events to the page
+    function renderEvents() {
+      const container = document.getElementById('events-container');
+      
+      if (eventsState.filteredEvents.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-xl shadow-sm p-6 text-center text-gray-500">
+            No events found. Create your first event!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${eventsState.filteredEvents.map(event => `
+            <div class="event-card bg-white rounded-xl shadow-sm overflow-hidden">
+              <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                  <h3 class="text-lg font-semibold text-gray-800">${event.name}</h3>
+                  <span class="status-badge status-${event.status}">
+                    ${event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                  </span>
+                </div>
+                
+                <p class="text-gray-600 mb-4">${event.description}</p>
+                
+                <div class="space-y-2 text-sm text-gray-600">
+                  <div class="flex items-center">
+                    <i class="fas fa-calendar-day mr-2 w-5"></i>
+                    <span>${formatDateRange(event.startDate, event.endDate)}</span>
+                  </div>
+                  ${event.startTime ? `
+                    <div class="flex items-center">
+                      <i class="fas fa-clock mr-2 w-5"></i>
+                      <span>${formatTime(event.startTime)} - ${formatTime(event.endTime)}</span>
+                    </div>
+                  ` : ''}
+                  <div class="flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2 w-5"></i>
+                    <span>${event.location}</span>
+                  </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                  <div class="flex justify-between items-center">
+                    <div>
+                      <span class="font-medium">${event.attendeesCount}</span>
+                      <span class="text-gray-500"> / ${event.capacity} attendees</span>
+                    </div>
+                    <div>
+                      ${event.isPublic ? 
+                        '<span class="text-green-600 text-sm">Public</span>' : 
+                        '<span class="text-blue-600 text-sm">Private</span>'}
+                    </div>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div 
+                      class="bg-blue-600 h-2 rounded-full" 
+                      style="width: ${calculateAttendancePercentage(event.attendeesCount, event.cacity)}%"
+                    ></div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 flex space-x-2">
+                  <button 
+                    onclick="viewEventDetails('${event.id}')" 
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition"
+                  >
+                    View
+                  </button>
+                  <button 
+                    onclick="editEvent('${event.id}')" 
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg transition"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Filter events by status
+    function filterEvents(status) {
+      if (status === 'all') {
+        eventsState.filteredEvents = [...eventsState.allEvents];
+      } else {
+        eventsState.filteredEvents = eventsState.allEvents.filter(
+          event => event.status === status
+        );
+      }
+      renderEvents();
+    }
+
+    // Search events by name
+    function searchEvents() {
+      const searchTerm = document.getElementById('search-events').value.toLowerCase();
+      eventsState.filteredEvents = eventsState.allEvents.filter(
+        event => event.name.toLowerCase().includes(searchTerm)
+      );
+      renderEvents();
+    }
+
+    // Helper functions
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function formatTime(timeString) {
+      if (!timeString) return '';
+      const [hours, minutes] = timeString.split(':');
+      const hour = parseInt(hours);
+      const ampm = hour >= 12 ? 'PM' : 'AM';
+      const hour12 = hour % 12 || 12;
+      return `${hour12}:${minutes} ${ampm}`;
+    }
+
+    function formatDateRange(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      if (start.toDateString() === end.toDateString()) {
+        return formatDate(startDate);
+      }
+      
+      return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+    }
+
+    function calculateAttendancePercentage(attendees, capacity) {
+      if (capacity === 0) return 0;
+      return Math.min(Math.round((attendees / capacity) * 100), 100);
+    }
+
+    // Modal functions (similar to your dashboard)
+    function showAddEventModal() {
+      document.getElementById('add-event-modal').classList.remove('hidden');
+    }
+
+    function hideAddEventModal() {
+      document.getElementById('add-event-modal').classList.add('hidden');
+    }
+
+    // Placeholder functions for event actions
+    function viewEventDetails(eventId) {
+      // Implement view event details functionality
+      console.log('View event:', eventId);
+      // window.location.href = `event-details.html?id=${eventId}`;
+    }
+
+    function editEvent(eventId) {
+      // Implement edit event functionality
+      console.log('Edit event:', eventId);
+    }
+  </script>
+</body>
+</html>
