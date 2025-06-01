@@ -7,6 +7,14 @@ let appState = {
   events: [],
   attendees: [],
   analytics: null,
+  filteredAttendees: [],
+  currentPage: 1,
+  itemsPerPage: 10,
+  currentFilters: {
+    event: '',
+    status: '',
+    search: '',
+  },
 };
 
 {

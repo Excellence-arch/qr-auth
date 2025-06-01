@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventPass - Attendees</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="./assets/js/utilities.js"></script>
+    <script src="./assets/js/main.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/style.css" />
+    <style>
+      .page-transition {
+        transition: all 0.3s ease;
+      }
+      .hidden-page {
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+      }
+      .active-page {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid #3498db;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      .wave-loading {
+        display: inline-block;
+        position: relative;
+        width: 80px;
+        height: 80px;
+      }
+      .wave-loading div {
+        position: absolute;
+        width: 16px;
+        background: #3b82f6;
+        animation: wave-loading 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+      }
+      .wave-loading div:nth-child(1) {
+        left: 8px;
+        animation-delay: -0.24s;
+      }
+      .wave-loading div:nth-child(2) {
+        left: 32px;
+        animation-delay: -0.12s;
+      }
+      .wave-loading div:nth-child(3) {
+        left: 56px;
+        animation-delay: 0;
+      }
+      @keyframes wave-loading {
+        0% {
+          top: 8px;
+          height: 64px;
+        }
+        50%,
+        100% {
+          top: 24px;
+          height: 32px;
+        }
+      }
+      .slide-in {
+        animation: slideIn 0.3s ease-out forwards;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen font-sans">
+    <!-- Dashboard Layout -->
+    <div class="flex h-screen">
+      <!-- Include sidebar -->
+      <div id="sidebar-container"></div>
+
+      <!-- Main Content -->
+      <div class="flex-1 overflow-auto">
+        <!-- Header -->
+        <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+          <h2 class="text-xl font-semibold text-gray-800">Attendees</h2>
+          <div class="flex space-x-3">
+            <button
+              id="add-attendee-btn"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+            >
+              <i class="fas fa-user-plus mr-1"></i> Add Attendee
+            </button>
+          </div>
+          <div id="add-attendee-modal-container"></div>
+        </header>
+
+        <!-- Attendees Content -->
+        <main class="p-6">
+          <!-- Filters -->
+          <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Event</label
+                >
+                <select
+                  id="event-filter"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Events</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Status</label
+                >
+                <select
+                  id="status-filter"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="registered">Registered</option>
+                  <option value="checked-in">Checked In</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"
+                  >Search</label
+                >
+                <div class="relative">
+                  <input
+                    type="text"
+                    id="search-filter"
+                    placeholder="Search attendees..."
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <i
+                    class="fas fa-search absolute left-3 top-3 text-gray-400"
+                  ></i>
+                </div>
+              </div>
+              <div class="flex items-end">
+                <button
+                  id="reset-filters"
+                  class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium transition"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendees Table -->
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-gray-800">Attendees List</h3>
+              <div class="text-sm text-gray-500" id="attendees-count">
+                Loading...
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="attendees-table-body">
+                  <tr>
+                    <td colspan="5" class="px-6 py-4 text-center">
+                      <div class="wave-loading">
+                        <div></div><div></div><div></div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              <div class="text-sm text-gray-500" id="pagination-info">
+                Showing 0 to 0 of 0 entries
+              </div>
+              <div class="flex space-x-2">
+                <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                  Previous
+                </button>
+                <button id="next-page" class="px-3 py-1 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Attendee Details Modal -->
+    <div id="attendee-details-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                <div class="flex justify-between items-start">
+                  <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-attendee-name">
+                    Attendee Details
+                  </h3>
+                  <button type="button" class="close-modal text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="mt-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-2">Personal Information</h4>
+                      <div class="space-y-2">
+                        <p><span class="text-gray-600">Name:</span> <span id="detail-name">-</span></p>
+                        <p><span class="text-gray-600">Email:</span> <span id="detail-email">-</span></p>
+                        <p><span class="text-gray-600">Phone:</span> <span id="detail-phone">-</span></p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-2">Event Information</h4>
+                      <div class="space-y-2">
+                        <p><span class="text-gray-600">Event:</span> <span id="detail-event">-</span></p>
+                        <p><span class="text-gray-600">Dates:</span> <span id="detail-dates">-</span></p>
+                        <p><span class="text-gray-600">Location:</span> <span id="detail-location">-</span></p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-2">Registration Details</h4>
+                      <div class="space-y-2">
+                        <p><span class="text-gray-600">Status:</span> <span id="detail-status">-</span></p>
+                        <p><span class="text-gray-600">Code:</span> <span id="detail-code">-</span></p>
+                        <p><span class="text-gray-600">Registered:</span> <span id="detail-registered">-</span></p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="font-medium text-gray-800 mb-2">QR Code</h4>
+                      <div class="flex justify-center">
+                        <div id="qr-code-container" class="border border-gray-200 p-4 rounded-lg">
+                          <p class="text-gray-500 text-sm">Loading QR code...</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <button type="button" id="check-in-btn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+              Check In
+            </button>
+            <button type="button" class="close-modal mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./assets/js/sidebar.js"></script>
+    <script>
+      // Global state
+
+      // DOM Content Loaded
+      document.addEventListener('DOMContentLoaded', async function() {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) {
+          window.location.href = 'index.html';
+        }
+
+        // Load add attendee modal
+        fetch('add-attendee-modal.html')
+          .then(response => response.text())
+          .then(data => {
+            document.getElementById('add-attendee-modal-container').innerHTML = data;
+          });
+
+        // Load all data
+        await loadAllData();
+
+        // Set up event listeners
+        setupEventListeners();
+      });
+
+      // Load all data
+      async function loadAllData() {
+        try {
+          // Load events for filter dropdown
+          const eventsResponse = await fetch(`${API_BASE_URL}/event/account`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
+          const eventsData = await eventsResponse.json();
+          appState.events = eventsData.data.events || [];
+          populateEventFilter();
+
+          // Load attendees
+          await loadAttendees();
+        } catch (error) {
+          console.error('Error loading data:', error);
+          showToast('Failed to load data. Please try again.', 'error');
+        }
+      }
+
+      // Populate event filter dropdown
+      function populateEventFilter() {
+        const select = document.getElementById('event-filter');
+        
+        // Clear existing options except the first one
+        while (select.options.length > 1) {
+          select.remove(1);
+        }
+        
+        // Add events to dropdown
+        appState.events.forEach(event => {
+          const option = document.createElement('option');
+          option.value = event._id;
+          option.textContent = event.name;
+          select.appendChild(option);
+        });
+      }
+
+      // Load attendees from API
+      async function loadAttendees() {
+        try {
+          // Show loading state
+          document.getElementById('attendees-table-body').innerHTML = `
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center">
+                <div class="wave-loading">
+                  <div></div><div></div><div></div>
+                </div>
+              </td>
+            </tr>`;
+
+          // Get all attendees for user's events
+          const response = await fetch(`${API_BASE_URL}/attendee/all`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch attendees');
+          }
+          
+          const data = await response.json();
+          appState.attendees = data.data.attendees || [];
+          
+          // Apply any existing filters
+          applyFilters();
+          
+          // Render attendees
+          renderAttendees();
+          updatePagination();
+        } catch (error) {
+          console.error('Error loading attendees:', error);
+          showToast('Failed to load attendees. Please try again.', 'error');
+          document.getElementById('attendees-table-body').innerHTML = `
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                Failed to load attendees. Please try again.
+              </td>
+            </tr>`;
+        }
+      }
+
+      // Apply filters to attendees
+      function applyFilters() {
+        const { event, status, search } = appState.currentFilters;
+        
+        appState.filteredAttendees = appState.attendees.filter(attendee => {
+          // Filter by event
+          if (event && attendee.event._id !== event) {
+            return false;
+          }
+          
+          // Filter by status (placeholder - you'll need to adjust based on your actual data structure)
+          if (status && attendee.status !== status) {
+            return false;
+          }
+          
+          // Filter by search term
+          if (search) {
+            const searchTerm = search.toLowerCase();
+            return (
+              attendee.name.toLowerCase().includes(searchTerm) ||
+              attendee.email.toLowerCase().includes(searchTerm) ||
+              (attendee.phone && attendee.phone.toLowerCase().includes(searchTerm)) ||
+              attendee.event.name.toLowerCase().includes(searchTerm)
+            );
+          }
+          
+          return true;
+        });
+        
+        // Reset to first page when filters change
+        appState.currentPage = 1;
+      }
+
+      // Render attendees in table
+      function renderAttendees() {
+        const startIndex = (appState.currentPage - 1) * appState.itemsPerPage;
+        const endIndex = startIndex + appState.itemsPerPage;
+        const paginatedAttendees = appState.filteredAttendees.slice(startIndex, endIndex);
+        
+        if (paginatedAttendees.length === 0) {
+          document.getElementById('attendees-table-body').innerHTML = `
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                No attendees found matching your criteria.
+              </td>
+            </tr>`;
+          return;
+        }
+        
+        document.getElementById('attendees-table-body').innerHTML = paginatedAttendees
+          .map((attendee, index) => `
+            <tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 rounded-full ${getInitialsColor(index)} flex items-center justify-center text-white font-medium">
+                    ${getInitials(attendee.name)}
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">${attendee.name}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${attendee.email}</div>
+                ${attendee.phone ? `<div class="text-sm text-gray-500">${attendee.phone}</div>` : ''}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">${attendee.event.name}</div>
+                <div class="text-sm text-gray-500">${formatDate(attendee.event.startDate)}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="${getAttendeeStatusClass(attendee.status)}">
+                  ${getAttendeeStatusText(attendee.status)}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="viewAttendeeDetails('${attendee._id}')" class="text-blue-600 hover:text-blue-900 mr-3">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <button onclick="editAttendee('${attendee._id}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                <button onclick="deleteAttendee('${attendee._id}')" class="text-red-600 hover:text-red-900">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </td>
+            </tr>
+          `).join('');
+      }
+
+      // Update pagination controls
+      function updatePagination() {
+        const totalItems = appState.filteredAttendees.length;
+        const totalPages = Math.ceil(totalItems / appState.itemsPerPage);
+        const startItem = ((appState.currentPage - 1) * appState.itemsPerPage) + 1;
+        const endItem = Math.min(appState.currentPage * appState.itemsPerPage, totalItems);
+        
+        // Update pagination info
+        document.getElementById('pagination-info').textContent = 
+          `Showing ${startItem} to ${endItem} of ${totalItems} entries`;
+        
+        // Update attendees count
+        document.getElementById('attendees-count').textContent = 
+          `${totalItems} ${totalItems === 1 ? 'attendee' : 'attendees'}`;
+        
+        // Update button states
+        document.getElementById('prev-page').disabled = appState.currentPage === 1;
+        document.getElementById('next-page').disabled = appState.currentPage >= totalPages;
+      }
+
+      // View attendee details
+      async function viewAttendeeDetails(attendeeId) {
+        try {
+          // Show loading state in modal
+          document.getElementById('modal-attendee-name').textContent = 'Loading...';
+          document.getElementById('qr-code-container').innerHTML = '<p class="text-gray-500 text-sm">Loading QR code...</p>';
+          
+          // Show modal
+          document.getElementById('attendee-details-modal').classList.remove('hidden');
+          
+          // Fetch attendee details
+          const response = await fetch(`${API_BASE_URL}/attendee/${attendeeId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch attendee details');
+          }
+          
+          const data = await response.json();
+          const attendee = data.data;
+          
+          // Populate modal with attendee data
+          document.getElementById('modal-attendee-name').textContent = attendee.name;
+          document.getElementById('detail-name').textContent = attendee.name;
+          document.getElementById('detail-email').textContent = attendee.email;
+          document.getElementById('detail-phone').textContent = attendee.phone || 'Not provided';
+          document.getElementById('detail-event').textContent = attendee.event.name;
+          document.getElementById('detail-dates').textContent = 
+            `${formatDate(attendee.event.startDate)} to ${formatDate(attendee.event.endDate)}`;
+          document.getElementById('detail-location').textContent = attendee.event.location;
+          document.getElementById('detail-status').textContent = getAttendeeStatusText(attendee.status);
+          document.getElementById('detail-code').textContent = attendee.code.value;
+          document.getElementById('detail-registered').textContent = formatDateTime(attendee.createdAt);
+          
+          // Update QR code
+          if (attendee.qrCode) {
+            document.getElementById('qr-code-container').innerHTML = 
+              `<img src="${attendee.qrCode}" alt="QR Code" class="w-32 h-32 mx-auto">`;
+          } else {
+            document.getElementById('qr-code-container').innerHTML = 
+              '<p class="text-gray-500 text-sm">QR code not available</p>';
+          }
+          
+          // Update check-in button based on status
+          const checkInBtn = document.getElementById('check-in-btn');
+          if (attendee.status === 'checked-in') {
+            checkInBtn.disabled = true;
+            checkInBtn.textContent = 'Already Checked In';
+            checkInBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            checkInBtn.classList.add('bg-gray-400', 'hover:bg-gray-500');
+          } else {
+            checkInBtn.disabled = false;
+            checkInBtn.textContent = 'Check In';
+            checkInBtn.classList.remove('bg-gray-400', 'hover:bg-gray-500');
+            checkInBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            checkInBtn.onclick = () => checkInAttendee(attendeeId);
+          }
+        } catch (error) {
+          console.error('Error fetching attendee details:', error);
+          showToast('Failed to load attendee details', 'error');
+          document.getElementById('modal-attendee-name').textContent = 'Error Loading Attendee';
+        }
+      }
+
+      // Check in attendee
+      async function checkInAttendee(attendeeId) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/attendee/check-in/${attendeeId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to check in attendee');
+          }
+          
+          const data = await response.json();
+          showToast('Attendee checked in successfully', 'success');
+          
+          // Close modal and refresh data
+          document.getElementById('attendee-details-modal').classList.add('hidden');
+          await loadAttendees();
+        } catch (error) {
+          console.error('Error checking in attendee:', error);
+          showToast('Failed to check in attendee', 'error');
+        }
+      }
+
+      // Edit attendee
+      function editAttendee(attendeeId) {
+        // Implementation for editing an attendee
+        showToast('Edit functionality coming soon', 'info');
+      }
+
+      // Delete attendee
+      async function deleteAttendee(attendeeId) {
+        if (!confirm('Are you sure you want to delete this attendee?')) {
+          return;
+        }
+        
+        try {
+          const response = await fetch(`${API_BASE_URL}/attendee/${attendeeId}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('authToken')}`
+            }
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to delete attendee');
+          }
+          
+          showToast('Attendee deleted successfully', 'success');
+          await loadAttendees();
+        } catch (error) {
+          console.error('Error deleting attendee:', error);
+          showToast('Failed to delete attendee', 'error');
+        }
+      }
+
+      // Set up event listeners
+      function setupEventListeners() {
+        // Filter event listeners
+        document.getElementById('event-filter').addEventListener('change', (e) => {
+          appState.currentFilters.event = e.target.value;
+          applyFilters();
+          renderAttendees();
+          updatePagination();
+        });
+        
+        document.getElementById('status-filter').addEventListener('change', (e) => {
+          appState.currentFilters.status = e.target.value;
+          applyFilters();
+          renderAttendees();
+          updatePagination();
+        });
+        
+        document.getElementById('search-filter').addEventListener('input', (e) => {
+          appState.currentFilters.search = e.target.value;
+          applyFilters();
+          renderAttendees();
+          updatePagination();
+        });
+        
+        // Reset filters
+        document.getElementById('reset-filters').addEventListener('click', () => {
+          document.getElementById('event-filter').value = '';
+          document.getElementById('status-filter').value = '';
+          document.getElementById('search-filter').value = '';
+          
+          appState.currentFilters = {
+            event: '',
+            status: '',
+            search: ''
+          };
+          
+          applyFilters();
+          renderAttendees();
+          updatePagination();
+        });
+        
+        // Pagination controls
+        document.getElementById('prev-page').addEventListener('click', () => {
+          if (appState.currentPage > 1) {
+            appState.currentPage--;
+            renderAttendees();
+            updatePagination();
+          }
+        });
+        
+        document.getElementById('next-page').addEventListener('click', () => {
+          const totalPages = Math.ceil(appState.filteredAttendees.length / appState.itemsPerPage);
+          if (appState.currentPage < totalPages) {
+            appState.currentPage++;
+            renderAttendees();
+            updatePagination();
+          }
+        });
+        
+        // Modal close buttons
+        document.querySelectorAll('.close-modal').forEach(button => {
+          button.addEventListener('click', () => {
+            document.getElementById('attendee-details-modal').classList.add('hidden');
+          });
+        });
+        
+        // Add attendee button
+        document.getElementById('add-attendee-btn')?.addEventListener('click', function() {
+          const modal = document.getElementById('add-attendee-modal');
+          if (modal) {
+            modal.classList.remove('hidden');
+          }
+        });
+      }
+
+      // Helper functions
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+
+      function formatDateTime(dateTimeString) {
+        const date = new Date(dateTimeString);
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function getAttendeeStatusClass(status) {
+        const classes = {
+          'checked-in': 'bg-green-100 text-green-800',
+          registered: 'bg-yellow-100 text-yellow-800',
+          cancelled: 'bg-red-100 text-red-800',
+          waiting: 'bg-gray-100 text-gray-800'
+        };
+        return `px-2 py-1 rounded-full text-xs font-medium ${classes[status] || 'bg-gray-100 text-gray-800'}`;
+      }
+
+      function getAttendeeStatusText(status) {
+        const texts = {
+          'checked-in': 'Checked In',
+          registered: 'Registered',
+          cancelled: 'Cancelled',
+          waiting: 'Waiting List'
+        };
+        return texts[status] || status;
+      }
+
+      function getInitials(name) {
+        return name
+          .split(' ')
+          .map(part => part[0])
+          .join('')
+          .toUpperCase();
+      }
+
+      function getInitialsColor(id) {
+        const colors = [
+          'bg-teal-500',
+          'bg-blue-500',
+          'bg-purple-500',
+          'bg-pink-500',
+          'bg-red-500',
+          'bg-orange-500',
+          'bg-yellow-500',
+          'bg-green-500',
+          'bg-indigo-500'
+        ];
+        return colors[id % colors.length];
+      }
+
+      // Expose functions to global scope for inline event handlers
+      window.viewAttendeeDetails = viewAttendeeDetails;
+      window.editAttendee = editAttendee;
+      window.deleteAttendee = deleteAttendee;
+    </script>
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </body>
+</html>
