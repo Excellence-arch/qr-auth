@@ -36,7 +36,7 @@ fetch('sidebar.html')
 // Logout function
 function logout() {
   const logoutButton = document.querySelector('a[onclick="logout()"]');
-  setButtonLoading(logoutButton, true);
+  // setButtonLoading(logoutButton, true);
 
   showToast('Logging out...', 'info', 2000);
   setTimeout(() => {
