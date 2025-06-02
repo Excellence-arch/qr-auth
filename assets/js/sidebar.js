@@ -1,5 +1,6 @@
 // API base URL
-const API_BASE_URL = 'http://localhost:5000/api/v1';
+// const API_BASE_URL = 'http://localhost:5000/api/v1';
+const API_BASE_URL = 'https://qr-auth-be.onrender.com/api/v1';
 
 // Global state
 let appState = {

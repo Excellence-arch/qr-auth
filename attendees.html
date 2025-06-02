@@ -395,6 +395,7 @@
             }
           });
           
+          console.log(response);
           if (!response.ok) {
             throw new Error('Failed to fetch attendees');
           }
@@ -532,6 +533,7 @@
 
       // View attendee details
       async function viewAttendeeDetails(attendeeId) {
+        console.log(attendeeId)
         try {
           // Show loading state in modal
           document.getElementById('modal-attendee-name').textContent = 'Loading...';

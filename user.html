@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventPass - Attendee Details</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="./assets/js/main.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    .loading-spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .slide-in {
+      animation: slideIn 0.5s ease-out forwards;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+  <div class="flex h-screen">
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+      <header class="bg-white shadow-sm p-4 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-800">Attendee Details</h2>
+      </header>
+      
+      <main class="p-6">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div id="loading-container" class="p-8 text-center">
+            <div class="loading-spinner"></div>
+            <p class="mt-4 text-gray-600">Loading attendee details...</p>
+          </div>
+          
+          <div id="attendee-container" class="hidden">
+            <div class="p-6 border-b border-gray-100">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-800">Attendee Information</h3>
+                <span id="attendee-status" class="px-3 py-1 rounded-full text-xs font-medium"></span>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+              <!-- Personal Info Column -->
+              <div class="slide-in" style="animation-delay: 0.1s;">
+                <h4 class="font-medium text-gray-800 mb-4">Personal Information</h4>
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Full Name</p>
+                    <p id="attendee-name" class="text-gray-800 mt-1"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Email Address</p>
+                    <p id="attendee-email" class="text-gray-800 mt-1"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Phone Number</p>
+                    <p id="attendee-phone" class="text-gray-800 mt-1"></p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Event Info Column -->
+              <div class="slide-in" style="animation-delay: 0.2s;">
+                <h4 class="font-medium text-gray-800 mb-4">Event Information</h4>
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Event Name</p>
+                    <p id="event-name" class="text-gray-800 mt-1"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Event Dates</p>
+                    <p id="event-dates" class="text-gray-800 mt-1"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Location</p>
+                    <p id="event-location" class="text-gray-800 mt-1"></p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Registration Info Column -->
+              <div class="slide-in" style="animation-delay: 0.3s;">
+                <h4 class="font-medium text-gray-800 mb-4">Registration Details</h4>
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-sm text-gray-500">Registration Code</p>
+                    <p id="registration-code" class="text-gray-800 mt-1 font-mono"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Registration Date</p>
+                    <p id="registration-date" class="text-gray-800 mt-1"></p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-500">Check-in Status</p>
+                    <p id="checkin-status" class="text-gray-800 mt-1"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- QR Code Section -->
+            <div class="p-6 border-t border-gray-100">
+              <h4 class="font-medium text-gray-800 mb-4">QR Code</h4>
+              <div class="flex flex-col items-center">
+                <div id="qr-code-container" class="border border-gray-200 p-4 rounded-lg mb-4">
+                  <!-- QR code will be rendered here -->
+                </div>
+                <button id="checkin-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition hidden">
+                  <i class="fas fa-check-circle mr-2"></i> Check In Attendee
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Error Container -->
+          <div id="error-container" class="hidden p-8 text-center">
+            <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
+            <h3 class="text-xl font-medium text-gray-800 mb-2">Attendee Not Found</h3>
+            <p class="text-gray-600 mb-4">The attendee details could not be loaded.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE_URL = 'https://qr-auth-be.onrender.com';
+    document.addEventListener('DOMContentLoaded', async function() {
+      
+      // Get code ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeId = urlParams.get('id');
+      
+      if (!codeId) {
+        showError('No attendee code provided');
+        return;
+      }
+      
+      try {
+        // Fetch attendee details using the code ID
+        const response = await fetch(`${API_BASE_URL}/api/v1/qr/${codeId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch attendee details');
+        }
+        
+        const data = await response.json();
+        
+        // Hide loading, show attendee details
+        document.getElementById('loading-container').classList.add('hidden');
+        document.getElementById('attendee-container').classList.remove('hidden');
+        
+        // Populate attendee data
+        populateAttendeeData(data.data);
+        
+      } catch (error) {
+        console.error('Error loading attendee details:', error);
+        showError(error.message || 'Failed to load attendee details');
+      }
+    });
+    
+    // Populate attendee data in the UI
+    function populateAttendeeData(attendeeData) {
+      // Personal Information
+      document.getElementById('attendee-name').textContent = attendeeData.attendee.name;
+      document.getElementById('attendee-email').textContent = attendeeData.attendee.email;
+      document.getElementById('attendee-phone').textContent = 'Not provided'; // Phone not in backend response
+      
+      // Event Information
+      document.getElementById('event-name').textContent = attendeeData.event?.name || 'N/A';
+      document.getElementById('event-dates').textContent = 
+        attendeeData.event ? formatDate(attendeeData.event.date) : 'N/A';
+      document.getElementById('event-location').textContent = 'N/A'; // Location not in backend response
+      
+      // Registration Details
+      document.getElementById('registration-date').textContent = 'N/A'; // createdAt not in backend response
+      
+      // Status
+      const isCheckedIn = attendeeData.status === 'used';
+      const statusElement = document.getElementById('attendee-status');
+      const checkinStatusElement = document.getElementById('checkin-status');
+      
+      if (isCheckedIn) {
+        statusElement.textContent = 'Checked In';
+        statusElement.classList.add('bg-green-100', 'text-green-800');
+        checkinStatusElement.textContent = 'Checked in'; // usedAt not in backend response
+      } else {
+        statusElement.textContent = 'Registered';
+        statusElement.classList.add('bg-yellow-100', 'text-yellow-800');
+        checkinStatusElement.textContent = 'Not checked in yet';
+      }
+      document.getElementById('qr-code-container').innerHTML = `<img src="${attendeeData.code}" alt="QR Code" class="w-32 h-32 mx-auto"> </img>`;
+    }
+    
+    
+    // Helper functions
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    }
+    
+    function formatDateTime(dateTimeString) {
+      const date = new Date(dateTimeString);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    function showError(message) {
+      document.getElementById('loading-container').classList.add('hidden');
+      document.getElementById('attendee-container').classList.add('hidden');
+      document.getElementById('error-container').classList.remove('hidden');
+      
+      if (message) {
+        document.querySelector('#error-container p').textContent = message;
+      }
+    }
+  </script>
+</body>
+</html>

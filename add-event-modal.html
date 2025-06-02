@@ -157,6 +157,8 @@
 </div>
 
 <script>
+
+  
   // Add Event Modal functions
   function showAddEventModal() {
     document.getElementById('add-event-modal').classList.remove('hidden');
@@ -166,61 +168,4 @@
     document.getElementById('add-event-modal').classList.add('hidden');
   }
 
-  // Form submission
-  document
-    .getElementById('add-event-form')
-    .addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const submitButton = this.querySelector('button[type="submit"]');
-      setButtonLoading(submitButton, true);
-
-      const formData = {
-        name: document.getElementById('event-title').value,
-        description: document.getElementById('event-description').value,
-        startDate: document.getElementById('event-start-date').value,
-        endDate: document.getElementById('event-end-date').value,
-        startTime: document.getElementById('event-start-time').value,
-        endTime: document.getElementById('event-end-time').value,
-        location: document.getElementById('event-location').value,
-        capacity: document.getElementById('event-capacity').value,
-        isPublic: document.getElementById('event-is-public').checked,
-      };
-
-      try {
-        const response = await fetch('http://localhost:5000/api/v1/event', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to create event');
-        }
-
-        showToast('Event created successfully!', 'success');
-        // Refresh the events list
-        if (typeof loadEvents === 'function') {
-          await loadEvents();
-        }
-        if (typeof loadAllData === 'function') {
-          await loadAllData();
-        }
-        hideAddEventModal();
-        this.reset();
-      } catch (error) {
-        console.error('Error adding event:', error);
-        showToast(
-          error.message || 'Failed to add event. Please try again.',
-          'error'
-        );
-      } finally {
-        setButtonLoading(submitButton, false);
-      }
-    });
 </script>

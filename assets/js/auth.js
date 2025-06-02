@@ -117,17 +117,20 @@ document
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-          rememberMe: rememberMe,
-        }),
-      });
+      const res = await fetch(
+        'https://qr-auth-be.onrender.com/api/v1/auth/login',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            rememberMe: rememberMe,
+          }),
+        }
+      );
 
       const data = await res.json();
 
