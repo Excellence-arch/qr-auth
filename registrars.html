@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>EventPass - Registrar</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="./assets/js/main.js"></script>
@@ -15,9 +15,12 @@
       width: 100%;
       max-width: 500px;
       margin: 0 auto;
+      aspect-ratio: 1/1; /* Make it square */
     }
     #video {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
       border-radius: 0.5rem;
       display: block;
     }
@@ -26,10 +29,11 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 70%;
-      height: 70%;
+      width: 80%;
+      height: 80%;
       border: 3px dashed rgba(255, 255, 255, 0.7);
       pointer-events: none;
+      box-sizing: border-box;
     }
     #loading-overlay {
       display: none;
@@ -44,6 +48,7 @@
       justify-content: center;
       align-items: center;
       border-radius: 0.5rem;
+      z-index: 10;
     }
     #result-overlay {
       display: none;
@@ -58,6 +63,7 @@
       justify-content: center;
       align-items: center;
       border-radius: 0.5rem;
+      z-index: 10;
     }
     .success-bg {
       background-color: rgba(16, 185, 129, 0.9);
@@ -65,50 +71,88 @@
     .error-bg {
       background-color: rgba(239, 68, 68, 0.9);
     }
+    /* Mobile-specific adjustments */
+    @media (max-width: 640px) {
+      .flex.h-screen {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+      }
+      #sidebar-container {
+        width: 100%;
+        height: auto;
+      }
+      .flex-1 {
+        padding-top: 1rem;
+      }
+      #scanner-container {
+        width: 90vw;
+        height: 90vw;
+        margin: 1rem auto;
+      }
+      #scan-region {
+        width: 85%;
+        height: 85%;
+      }
+      .p-6 {
+        padding: 1rem;
+      }
+      .text-lg {
+        font-size: 1.125rem;
+      }
+      .text-xl {
+        font-size: 1.25rem;
+      }
+      button {
+        padding: 0.75rem 1rem;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
-  <div class="flex h-screen">
+  <div class="flex flex-col md:flex-row h-screen">
     <!-- Include sidebar -->
     <div id="sidebar-container"></div>
 
     <!-- Main Content -->
     <div class="flex-1 overflow-auto">
-      <header class="bg-white shadow-sm p-4">
+      <header class="bg-white shadow-sm p-4 sticky top-0 z-10">
         <h2 class="text-xl font-semibold text-gray-800">Registrar</h2>
       </header>
       
-      <main class="p-6">
-        <div class="bg-white rounded-xl shadow-sm p-6">
+      <main class="p-4 md:p-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">Check-in Attendees</h3>
           
           <div class="mb-6">
             <p class="text-gray-600 mb-4">Scan attendee QR codes to check them in automatically.</p>
-            <button id="start-scanner-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
-              <i class="fas fa-camera mr-2"></i> Start Scanner
-            </button>
-            <button id="stop-scanner-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition ml-2 hidden">
-              <i class="fas fa-stop mr-2"></i> Stop Scanner
-            </button>
+            <div class="flex flex-col sm:flex-row gap-2">
+              <button id="start-scanner-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+                <i class="fas fa-camera mr-2"></i> Start Scanner
+              </button>
+              <button id="stop-scanner-btn" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition hidden">
+                <i class="fas fa-stop mr-2"></i> Stop Scanner
+              </button>
+            </div>
           </div>
 
-          <div id="scanner-container" class="hidden">
+          <div id="scanner-container" class="hidden mx-auto">
             <video id="video" playsinline></video>
             <div id="scan-region"></div>
             <div id="loading-overlay">
               <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-              <p class="text-xl font-medium">Processing QR Code...</p>
+              <p class="text-xl font-medium text-center px-4">Processing QR Code...</p>
             </div>
             <div id="result-overlay">
               <i id="result-icon" class="fas fa-check-circle text-5xl mb-2"></i>
-              <p id="result-message" class="text-xl font-medium mb-4"></p>
+              <p id="result-message" class="text-xl font-medium mb-4 text-center px-4"></p>
               <button id="scan-again-btn" class="bg-white text-gray-800 px-4 py-2 rounded-lg font-medium mt-4">
                 Scan Again
               </button>
             </div>
           </div>
 
-          <div id="scanner-status" class="mt-4 text-gray-600">
+          <div id="scanner-status" class="mt-4 text-gray-600 text-center md:text-left">
             Scanner is not active. Click "Start Scanner" to begin.
           </div>
 
@@ -116,7 +160,8 @@
             <h4 class="font-medium text-gray-800 mb-2">Last Check-in</h4>
             <div class="bg-gray-50 p-4 rounded-lg">
               <div class="flex items-center">
-                <div id="attendee-avatar" class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium mr-4"></div>
+                <div id="attendee-avatar" class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium mr-3 md:mr-4">
+                </div>
                 <div>
                   <p id="attendee-name" class="font-medium"></p>
                   <p id="attendee-event" class="text-sm text-gray-600"></p>
@@ -162,17 +207,40 @@
         scannerStatus.textContent = 'Starting scanner...';
         loadingOverlay.style.display = 'flex';
         
-        // Request camera access
-        stream = await navigator.mediaDevices.getUserMedia({ 
+        // Request camera access - prioritize rear camera on mobile
+        const constraints = {
           video: { 
-            facingMode: 'environment', // Prefer rear camera
+            facingMode: 'environment',
             width: { ideal: 1280 },
             height: { ideal: 720 }
           } 
-        });
+        };
+        
+        // On mobile, we might need to adjust constraints
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          constraints.video = { 
+            facingMode: 'environment',
+            width: { ideal: window.screen.availWidth },
+            height: { ideal: window.screen.availHeight }
+          };
+        }
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         
         video.srcObject = stream;
         await video.play();
+        
+        // Adjust video orientation for mobile
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+          const streamSettings = stream.getVideoTracks()[0].getSettings();
+          const isPortrait = streamSettings.height > streamSettings.width;
+          
+          if (isPortrait) {
+            video.style.transform = 'rotate(90deg)';
+            video.style.width = '100vh';
+            video.style.height = '100vw';
+          }
+        }
         
         scannerContainer.classList.remove('hidden');
         startScannerBtn.classList.add('hidden');
@@ -192,9 +260,39 @@
           scannerStatus.textContent = 'Camera access denied. Please allow camera access to use the scanner.';
         } else if (error.name === 'NotFoundError') {
           scannerStatus.textContent = 'No camera found. Please check your device.';
+        } else if (error.name === 'OverconstrainedError') {
+          // Try again with less strict constraints
+          scannerStatus.textContent = 'Adjusting camera settings...';
+          setTimeout(() => startScannerWithFallback(), 500);
         }
       }
     });
+
+    // Fallback camera start with less constraints
+    async function startScannerWithFallback() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment' 
+          } 
+        });
+        
+        video.srcObject = stream;
+        await video.play();
+        
+        scannerContainer.classList.remove('hidden');
+        startScannerBtn.classList.add('hidden');
+        stopScannerBtn.classList.remove('hidden');
+        loadingOverlay.style.display = 'none';
+        scannerStatus.textContent = 'Scanner active. Point camera at QR code.';
+        scanning = true;
+        
+        scanInterval = setInterval(scanQRCode, 100);
+      } catch (error) {
+        console.error('Fallback camera error:', error);
+        scannerStatus.textContent = 'Failed to access camera: ' + error.message;
+      }
+    }
 
     // Stop scanner
     stopScannerBtn.addEventListener('click', () => {
@@ -224,6 +322,11 @@
       stopScannerBtn.classList.add('hidden');
       scannerStatus.textContent = 'Scanner is not active. Click "Start Scanner" to begin.';
       scanning = false;
+      
+      // Reset video transform if it was rotated
+      video.style.transform = '';
+      video.style.width = '';
+      video.style.height = '';
     }
 
     // Scan for QR codes
@@ -340,6 +443,17 @@
       startScannerBtn.disabled = true;
       scannerStatus.textContent = 'Camera not supported on this device.';
     }
+
+    // Handle orientation changes on mobile
+    window.addEventListener('orientationchange', () => {
+      if (stream && scanning) {
+        // Restart scanner to adjust to new orientation
+        stopScanner();
+        setTimeout(() => {
+          startScannerBtn.click();
+        }, 300);
+      }
+    });
   </script>
 </body>
 </html>
