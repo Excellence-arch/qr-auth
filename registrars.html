@@ -347,6 +347,7 @@
           scanning = false;
           loadingOverlay.style.display = 'flex';
           setTimeout(() => {
+            console.log(code);
             processScannedCode(code.data);
           }, 100); // Small delay to ensure loading screen shows
         }
@@ -366,9 +367,11 @@
           const url = new URL(codeData);
           codeValue = url.pathname.split('/').pop();
         }
+        console.log(codeData);
+        console.log(codeValue);
         
         // Validate code through admin endpoint
-        const response = await fetch(`${API_BASE_URL}/qr/validate/${codeValue}`, {
+        const response = await fetch(`http://localhost:5000/api/v1/qr/validate/${codeValue}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
