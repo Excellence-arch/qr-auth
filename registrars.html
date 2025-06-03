@@ -343,7 +343,7 @@
           inversionAttempts: 'dontInvert',
         });
         
-        if (code) {
+        if (code.data) {
           scanning = false;
           loadingOverlay.style.display = 'flex';
           setTimeout(() => {
@@ -371,7 +371,7 @@
         console.log(codeValue);
         
         // Validate code through admin endpoint
-        const response = await fetch(`http://localhost:5000/api/v1/qr/validate/${codeValue}`, {
+        const response = await fetch(`https://qr-auth-be.onrender.com/api/v1/qr/validate/${codeValue}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

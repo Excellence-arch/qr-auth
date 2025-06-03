@@ -137,3 +137,41 @@
 .dropdown-menu.show {
   display: block;
 }
+
+/* Sidebar transitions */
+.sidebar {
+  transition: width 0.3s ease;
+}
+
+/* Tooltip for collapsed menu items */
+.sidebar a[title] {
+  position: relative;
+}
+
+.sidebar a[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 10px;
+  padding: 5px 10px;
+  background: #fff;
+  color: #333;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar:not(.w-64) {
+    width: 4rem;
+  }
+  
+  .sidebar.w-64 {
+    width: 16rem;
+  }
+}
